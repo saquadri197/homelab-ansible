@@ -21,6 +21,7 @@ import sys
 import csv
 import json
 import hmac
+import uuid
 import base64
 import hashlib
 import logging
@@ -76,8 +77,9 @@ class BlofinClient:
 
     Authentication uses HMAC-SHA256. Every request needs:
       ACCESS-KEY        — your API key
-      ACCESS-SIGN       — HMAC-SHA256(timestamp + method + path + body)
+      ACCESS-SIGN       — HMAC-SHA256(timestamp + nonce + method + path + body)
       ACCESS-TIMESTAMP  — Unix timestamp in milliseconds (string)
+      ACCESS-NONCE      — UUID4 random string (unique per request)
       ACCESS-PASSPHRASE — your API passphrase (set when creating the key)
     """
 
@@ -91,26 +93,28 @@ class BlofinClient:
         self.session.headers.update({"Content-Type": "application/json"})
 
     # ── Signature generation ──────────────────────────────────────────────────
-    def _sign(self, timestamp: str, method: str, path: str, body: str = "") -> str:
+    def _sign(self, timestamp: str, nonce: str, method: str, path: str, body: str = "") -> str:
         """
         Create HMAC-SHA256 signature.
-        Prehash string: timestamp + method.upper() + path + body
+        Prehash string: timestamp + nonce + method.upper() + path + body
         """
-        prehash = f"{timestamp}{method.upper()}{path}{body}"
+        prehash = f"{path}{method.upper()}{timestamp}{nonce}{body}"
         mac     = hmac.new(
             self.api_secret.encode("utf-8"),
             prehash.encode("utf-8"),
             hashlib.sha256,
         )
-        return base64.b64encode(mac.digest()).decode("utf-8")
+        return base64.b64encode(mac.hexdigest().encode()).decode("utf-8")
 
     def _headers(self, method: str, path: str, body: str = "") -> dict:
         """Build authenticated request headers."""
-        ts = str(int(time.time() * 1000))
+        ts    = str(int(time.time() * 1000))
+        nonce = uuid.uuid4().hex
         return {
             "ACCESS-KEY":        self.api_key,
-            "ACCESS-SIGN":       self._sign(ts, method, path, body),
+            "ACCESS-SIGN":       self._sign(ts, nonce, method, path, body),
             "ACCESS-TIMESTAMP":  ts,
+            "ACCESS-NONCE":      nonce,
             "ACCESS-PASSPHRASE": self.passphrase,
             "Content-Type":      "application/json",
         }
@@ -150,7 +154,7 @@ class BlofinClient:
             resp = self._get("/api/v1/account/balance")
             # Blofin returns a list of asset balances; find USDT
             if resp.get("code") == "0":
-                for asset in resp.get("data", []):
+                for asset in resp.get("data", {}).get("details", []):
                     if asset.get("currency", "").upper() == "USDT":
                         return float(asset.get("equity", 0))
             log.error("Balance fetch failed: %s", resp)
@@ -566,17 +570,10 @@ def webhook():
     Main TradingView webhook receiver.
 
     TradingView sends a POST with a JSON body containing your alert message.
-    We validate an optional shared secret header, parse the payload, and
+    We validate the shared secret from the JSON body, parse the payload, and
     call execute_trade().
     """
-    # ── Optional: validate shared secret from header ──────────────────────────
-    if WEBHOOK_SECRET:
-        provided_secret = request.headers.get("X-Webhook-Secret", "")
-        if provided_secret != WEBHOOK_SECRET:
-            log.warning("Invalid webhook secret from IP: %s", request.remote_addr)
-            return jsonify({"error": "Unauthorized"}), 401
-
-    # ── Parse JSON body ───────────────────────────────────────────────────────
+    # ── Parse JSON body first ─────────────────────────────────────────────────
     try:
         data = request.get_json(force=True)
         if not data:
@@ -586,6 +583,15 @@ def webhook():
     except Exception as e:
         log.error("Failed to parse webhook payload: %s | raw: %s", e, request.data)
         return jsonify({"error": "Invalid JSON payload"}), 400
+
+    # ── Validate shared secret from JSON body ─────────────────────────────────
+    # NOTE: TradingView does NOT support custom HTTP headers — secret must be
+    # included in the alert JSON body, not as a header.
+    if WEBHOOK_SECRET:
+        provided_secret = data.get("secret", "")
+        if provided_secret != WEBHOOK_SECRET:
+            log.warning("Invalid webhook secret from IP: %s", request.remote_addr)
+            return jsonify({"error": "Unauthorized"}), 401
 
     log.info("📥 Webhook received: %s", json.dumps(data))
 
