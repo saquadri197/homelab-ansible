@@ -1,0 +1,115 @@
+---
+# ============================================================
+# playbooks/audit_firewall.yml
+# READ-ONLY audit — makes zero changes.
+# Runs without sudo so it works before the common role has
+# deployed passwordless sudo across the fleet.
+#
+# Usage:
+#   ansible-playbook playbooks/audit_firewall.yml
+#   cat reports/firewall_audit_$(date +%Y-%m-%d).txt
+# ============================================================
+
+- name: Collect firewall and port state from all hosts
+  hosts: managed_linux
+  gather_facts: yes
+  become: no                  # no sudo needed — read-only commands only
+  any_errors_fatal: false
+
+  tasks:
+
+    - name: Get UFW status (user-level, no sudo)
+      command: ufw status verbose
+      register: ufw_status
+      changed_when: false
+      failed_when: false
+
+    - name: Get listening TCP/UDP ports (no sudo needed)
+      command: ss -tlnup
+      register: listening_ports
+      changed_when: false
+      failed_when: false
+
+    - name: Check if Docker socket exists
+      stat:
+        path: /var/run/docker.sock
+      register: docker_sock
+
+    - name: Get Docker containers if socket is accessible
+      command: docker ps --format "table {% raw %}{{.Names}}\t{{.Status}}\t{{.Ports}}{% endraw %}"
+      register: docker_containers
+      changed_when: false
+      failed_when: false
+      when: docker_sock.stat.exists | default(false)
+
+    - name: Check if this is a Proxmox host
+      stat:
+        path: /usr/bin/pvesh
+      register: pvesh_stat
+
+    - name: Get network interfaces and IPs
+      command: ip -br addr show
+      register: ip_addrs
+      changed_when: false
+      failed_when: false
+
+- name: Write firewall audit report
+  hosts: localhost
+  gather_facts: yes
+
+  tasks:
+
+    - name: Create reports directory
+      file:
+        path: "{{ playbook_dir }}/../reports"
+        state: directory
+        mode: "0755"
+
+    - name: Build and write audit report
+      copy:
+        dest: "{{ playbook_dir }}/../reports/firewall_audit_{{ ansible_date_time.date }}.txt"
+        content: |
+          ================================================================
+          FIREWALL AUDIT REPORT — {{ ansible_date_time.date }} {{ ansible_date_time.time }}
+          syedaq.com Homelab | ansible01
+          READ-ONLY — no changes were made
+          ================================================================
+          NOTE: UFW status may show 'permission denied' on hosts where
+          saquadri does not yet have sudo. Run common role first to fix,
+          then re-run this audit for full UFW visibility.
+          ================================================================
+
+          {% for host in groups['managed_linux'] %}
+          {% set hv = hostvars[host] %}
+          ----------------------------------------------------------------
+          HOST: {{ host }} ({{ hv.ansible_host | default('?') }})
+          OS:   {{ hv.ansible_distribution | default('?') }} {{ hv.ansible_distribution_version | default('') }}
+          {% if hv.pvesh_stat is defined and hv.pvesh_stat.stat.exists %}
+          *** PROXMOX HOST — UFW will be SKIPPED during hardening ***
+          {% endif %}
+          ----------------------------------------------------------------
+
+          [ NETWORK INTERFACES ]
+          {{ hv.ip_addrs.stdout | default('Not available') }}
+
+          [ UFW STATUS ]
+          {{ hv.ufw_status.stdout | default('Not available (may need sudo — run common role first)') }}
+
+          [ LISTENING PORTS (ss -tlnup) ]
+          {{ hv.listening_ports.stdout | default('Not available') }}
+
+          [ DOCKER CONTAINERS ]
+          {% if hv.docker_sock is defined and hv.docker_sock.stat.exists | default(false) %}
+          {{ hv.docker_containers.stdout | default('Docker socket found but could not list containers') }}
+          {% else %}
+          Docker not running or socket not accessible as saquadri
+          {% endif %}
+
+          {% endfor %}
+          ================================================================
+          END OF REPORT
+          ================================================================
+
+    - name: Report location
+      debug:
+        msg: "Audit report saved to: reports/firewall_audit_{{ ansible_date_time.date }}.txt"

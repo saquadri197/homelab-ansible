@@ -1,0 +1,187 @@
+---
+# ============================================================
+# roles/security/tasks/main.yml
+# Phase 1: UFW baseline, root SSH disable
+# Phase 2: Key-only SSH auth, fail2ban
+#
+# SAFETY RULES:
+#   - UFW rules are only ADDED, never removed or reset.
+#   - Proxmox hosts (proxmox_hosts group) skip UFW changes
+#     entirely — their firewall is managed by PVE itself.
+#   - Run audit_firewall.yml before applying to any new host.
+#   - Default policy (deny inbound) only applied when
+#     ufw_set_default_policy: true (default: false).
+# ============================================================
+
+# ---- Guard: skip UFW on Proxmox hosts ----------------------
+
+- name: Check if this is a Proxmox host
+  set_fact:
+    is_proxmox_host: "{{ inventory_hostname in groups.get('proxmox_hosts', []) or inventory_hostname in groups.get('omv_hosts', []) }}"
+
+- name: Warn and skip UFW on Proxmox hosts
+  debug:
+    msg: >-
+      SKIPPING UFW changes on {{ inventory_hostname }} — this host is in
+      [proxmox_hosts]. Manage its firewall via the Proxmox UI or datacenter
+      firewall, not UFW.
+  when: is_proxmox_host
+
+# ---- Phase 1: UFW (non-Proxmox hosts only) -----------------
+
+- name: Install UFW
+  package:
+    name: ufw
+    state: present
+  become: yes
+  when: not is_proxmox_host
+
+- name: Check current UFW status before any changes
+  command: ufw status verbose
+  register: ufw_current_status
+  changed_when: false
+  failed_when: false
+  become: yes
+  when: not is_proxmox_host
+
+- name: Show current UFW rules (pre-change audit)
+  debug:
+    msg: "{{ ufw_current_status.stdout_lines }}"
+  when:
+    - not is_proxmox_host
+    - ufw_current_status is defined
+
+- name: UFW — set default deny inbound (only if ufw_set_default_policy is true)
+  ufw:
+    direction: incoming
+    policy: deny
+  become: yes
+  notify: Reload UFW
+  when:
+    - not is_proxmox_host
+    - ufw_set_default_policy | default(false) | bool
+
+- name: UFW — set default allow outbound (only if ufw_set_default_policy is true)
+  ufw:
+    direction: outgoing
+    policy: allow
+  become: yes
+  notify: Reload UFW
+  when:
+    - not is_proxmox_host
+    - ufw_set_default_policy | default(false) | bool
+
+- name: UFW — ADD allowed TCP ports (never removes existing rules)
+  ufw:
+    rule: allow
+    port: "{{ item | string }}"
+    proto: tcp
+    comment: "ansible-managed"
+  loop: "{{ ufw_allowed_tcp_ports | default([]) }}"
+  become: yes
+  notify: Reload UFW
+  when: not is_proxmox_host
+
+- name: UFW — enable (activates if inactive, no-op if already active)
+  ufw:
+    state: enabled
+  become: yes
+  when: not is_proxmox_host
+
+# ---- Phase 1: SSH root login --------------------------------
+
+- name: SSH — disable root login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PermitRootLogin"
+    line: "PermitRootLogin {{ ssh_permit_root_login | default('no') }}"
+    state: present
+    backup: yes
+  become: yes
+  notify: Restart SSH
+
+# ---- Phase 2: SSH key-only auth ----------------------------
+
+- name: SSH — disable password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PasswordAuthentication"
+    line: "PasswordAuthentication {{ ssh_password_authentication | default('no') }}"
+    state: present
+  become: yes
+  notify: Restart SSH
+
+- name: SSH — enable pubkey authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?PubkeyAuthentication"
+    line: "PubkeyAuthentication {{ ssh_pubkey_authentication | default('yes') }}"
+    state: present
+  become: yes
+  notify: Restart SSH
+
+- name: SSH — set MaxAuthTries
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?MaxAuthTries"
+    line: "MaxAuthTries {{ ssh_max_auth_tries | default(3) }}"
+    state: present
+  become: yes
+  notify: Restart SSH
+
+- name: SSH — set ClientAliveInterval
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?ClientAliveInterval"
+    line: "ClientAliveInterval {{ ssh_client_alive_interval | default(300) }}"
+    state: present
+  become: yes
+  notify: Restart SSH
+
+- name: SSH — set ClientAliveCountMax
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#?ClientAliveCountMax"
+    line: "ClientAliveCountMax {{ ssh_client_alive_count_max | default(2) }}"
+    state: present
+  become: yes
+  notify: Restart SSH
+
+# ---- Phase 2: fail2ban -------------------------------------
+
+- name: Install fail2ban
+  package:
+    name: fail2ban
+    state: present
+  become: yes
+
+- name: Deploy fail2ban SSH jail
+  template:
+    src: sshd_jail.conf.j2
+    dest: /etc/fail2ban/jail.d/sshd.conf
+    owner: root
+    group: root
+    mode: "0644"
+  become: yes
+  notify: Restart fail2ban
+
+- name: Ensure fail2ban is started and enabled
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+  become: yes
+
+- name: UFW — ADD allowed UDP ports (never removes existing rules)
+  ufw:
+    rule: allow
+    port: "{{ item | string }}"
+    proto: udp
+    comment: "ansible-managed"
+  loop: "{{ ufw_allowed_udp_ports | default([]) }}"
+  become: yes
+  notify: Reload UFW
+  when:
+    - not is_proxmox_host
+    - ufw_allowed_udp_ports is defined
+    - ufw_allowed_udp_ports | length > 0

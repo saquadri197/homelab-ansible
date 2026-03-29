@@ -1,0 +1,20 @@
+---
+# ============================================================
+# roles/tradingbot/handlers/main.yml
+# ============================================================
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+  become: yes
+
+- name: Restart tradingbot
+  systemd:
+    name: tradingbot
+    state: restarted
+  become: yes
+
+- name: Reload UFW
+  ufw:
+    state: reloaded
+  become: yes

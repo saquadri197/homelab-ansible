@@ -1,0 +1,7 @@
+# rbis-app-dev (192.168.3.124) - Ubuntu 22.04
+# Containers: portainer_agent (9001), appsmith (8080->80)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 8080   # Appsmith web UI
+  - 9001   # Portainer agent

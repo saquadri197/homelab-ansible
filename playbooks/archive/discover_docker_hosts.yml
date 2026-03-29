@@ -1,0 +1,34 @@
+---
+- name: Discover Docker hosts
+  hosts: managed_linux
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Check for docker binary
+      command: which docker
+      register: docker_check
+      changed_when: false
+      failed_when: false
+
+    - name: Check docker service state
+      command: systemctl is-active docker
+      register: docker_service
+      changed_when: false
+      failed_when: false
+      when: docker_check.rc == 0
+
+    - name: Check running containers
+      command: docker ps --format '{{ "{{.Names}}" }}'
+      register: docker_containers
+      changed_when: false
+      failed_when: false
+      when: docker_check.rc == 0
+
+    - name: Show Docker discovery result
+      debug:
+        msg:
+          - "host={{ inventory_hostname }}"
+          - "docker_present={{ docker_check.rc == 0 }}"
+          - "docker_active={{ docker_service.stdout | default('not-installed') }}"
+          - "containers={{ docker_containers.stdout_lines | default([]) }}"

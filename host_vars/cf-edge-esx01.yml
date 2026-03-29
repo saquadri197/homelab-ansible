@@ -1,0 +1,7 @@
+# cf-edge-esx01 (192.168.3.123) - Debian 12
+# Cloudflare tunnel edge node - no inbound public ports needed
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443

@@ -1,0 +1,35 @@
+[Unit]
+Description=Black Cat Trading Bot (ETH/USDT 30m)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User={{ tradingbot_user }}
+Group={{ tradingbot_group }}
+WorkingDirectory={{ tradingbot_home }}
+EnvironmentFile={{ tradingbot_home }}/.env
+
+ExecStart={{ tradingbot_venv }}/bin/gunicorn \
+    --bind 0.0.0.0:{{ tradingbot_port }} \
+    --workers 1 \
+    --timeout 120 \
+    --log-file {{ tradingbot_log_dir }}/gunicorn.log \
+    --access-logfile {{ tradingbot_log_dir }}/access.log \
+    --error-logfile {{ tradingbot_log_dir }}/error.log \
+    webhook_server:app
+
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tradingbot
+
+# Systemd security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths={{ tradingbot_home }} {{ tradingbot_log_dir }}
+
+[Install]
+WantedBy=multi-user.target

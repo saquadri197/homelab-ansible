@@ -1,0 +1,1158 @@
+================================================================
+FIREWALL AUDIT REPORT — 2026-03-23 19:01:55
+syedaq.com Homelab | ansible01
+READ-ONLY — no changes were made
+================================================================
+NOTE: UFW status may show 'permission denied' on hosts where
+saquadri does not yet have sudo. Run common role first to fix,
+then re-run this audit for full UFW visibility.
+================================================================
+
+----------------------------------------------------------------
+HOST: netbox (192.168.3.120)
+OS:   Debian 12.12
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens18            UP             192.168.3.120/24 fe80::be24:11ff:febe:5a21/64 
+br-e40a6ff6fef8  UP             172.31.0.1/16 fe80::848:98ff:fe82:6f85/64 
+docker0          DOWN           172.17.0.1/16 
+br-500bd446e44a  DOWN           172.18.0.1/16 
+veth3f2e4f3@if2  UP             fe80::ecf2:59ff:fef9:fdf4/64 
+veth1fe0332@if2  UP             fe80::6c94:4ff:feab:2914/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:60073      0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:60072      0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+tcp   LISTEN 0      4096            [::]:60072         [::]:*          
+
+[ DOCKER CONTAINERS ]
+
+
+----------------------------------------------------------------
+HOST: wekan01 (192.168.3.121)
+OS:   Debian 12.12
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.121/24 fe80::20c:29ff:fee9:8806/64 
+br-12b8236eff75  UP             172.18.0.1/16 fe80::fc14:3fff:fe05:686f/64 
+docker0          DOWN           172.17.0.1/16 
+veth81311ca@if2  UP             fe80::c018:2eff:fe2a:f59/64 
+vethc362a79@if2  UP             fe80::7042:1ff:fe4c:416a/64 
+vethb92863f@if2  UP             fe80::3429:8fff:fef0:cdde/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      511          0.0.0.0:80        0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:8080      0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+tcp   LISTEN 0      511             [::]:80           [::]:*          
+
+[ DOCKER CONTAINERS ]
+NAMES               STATUS       PORTS
+cloudflared-wekan   Up 5 weeks   
+wekan               Up 5 weeks   127.0.0.1:8080->8080/tcp
+wekan-mongo         Up 5 weeks   27017/tcp
+
+----------------------------------------------------------------
+HOST: cf-edge-pve01 (192.168.3.122)
+OS:   Debian 12.12
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0@if7         UP             192.168.3.122/24 fe80::be24:11ff:fe6f:b979/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0                  *:35383            *:*          
+udp   UNCONN 0      0                  *:53939            *:*          
+udp   UNCONN 0      0                  *:39962            *:*          
+udp   UNCONN 0      0                  *:43880            *:*          
+tcp   LISTEN 0      100        127.0.0.1:25         0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:20241      0.0.0.0:*          
+tcp   LISTEN 0      100            [::1]:25            [::]:*          
+tcp   LISTEN 0      4096               *:22               *:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: cf-edge-esx01 (192.168.3.123)
+OS:   Debian 12.13
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.123/24 fe80::20c:29ff:fea8:147a/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0                  *:57471            *:*          
+udp   UNCONN 0      0                  *:48937            *:*          
+udp   UNCONN 0      0                  *:48977            *:*          
+udp   UNCONN 0      0                  *:47971            *:*          
+tcp   LISTEN 0      4096       127.0.0.1:20241      0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: rbis-app-dev (192.168.3.124)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.124/24 fe80::20c:29ff:fe59:4fc5/64 
+docker0          UP             172.17.0.1/16 fe80::f0fd:6cff:febb:c498/64 
+br-b4eb94e16e97  UP             172.18.0.1/16 fe80::f4ab:b0ff:fe61:1491/64 
+veth2530c0a@if2  UP             fe80::643e:b3ff:fede:24e0/64 
+veth8663eb3@if2  UP             fe80::482d:eeff:fe2b:8d0f/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9001      0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:8080      0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:9001         [::]:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+tcp   LISTEN 0      4096            [::]:8080         [::]:*          
+
+[ DOCKER CONTAINERS ]
+NAMES             STATUS                 PORTS
+portainer_agent   Up 24 hours            0.0.0.0:9001->9001/tcp, [::]:9001->9001/tcp
+appsmith          Up 11 days (healthy)   443/tcp, 0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+
+----------------------------------------------------------------
+HOST: rbis-db-dev (192.168.3.125)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.125/24 fe80::20c:29ff:feb0:7561/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:323       0.0.0.0:*          
+udp   UNCONN 0      0              [::1]:323          [::]:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      244    192.168.3.125:5432      0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: scb-auth-01 (192.168.3.126)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.126/24 fe80::20c:29ff:fe4c:fdc1/64 
+docker0          DOWN           172.17.0.1/16 
+br-14ad4700cee9  UP             172.18.0.1/16 fe80::c61:d0ff:fe84:6327/64 
+veth510bf3a@if2  UP             fe80::d4b7:17ff:fe49:b532/64 
+vethe5a1009@if2  UP             fe80::f80c:a7ff:fefd:5f56/64 
+vethc4c14aa@if2  UP             fe80::601a:2fff:fe28:47bb/64 
+vethf3c8397@if2  UP             fe80::740c:8ff:fecf:5930/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9000      0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9443      0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+tcp   LISTEN 0      4096            [::]:9000         [::]:*          
+tcp   LISTEN 0      4096            [::]:9443         [::]:*          
+
+[ DOCKER CONTAINERS ]
+NAMES                   STATUS                 PORTS
+saquadri-worker-1       Up 11 days (healthy)   
+saquadri-server-1       Up 11 days (healthy)   0.0.0.0:9000->9000/tcp, [::]:9000->9000/tcp, 0.0.0.0:9443->9443/tcp, [::]:9443->9443/tcp
+saquadri-postgresql-1   Up 11 days (healthy)   5432/tcp
+saquadri-redis-1        Up 11 days (healthy)   6379/tcp
+
+----------------------------------------------------------------
+HOST: portainer01 (192.168.3.128)
+OS:   Debian 12.13
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.128/24 fe80::20c:29ff:fe16:bb9c/64 
+docker0          DOWN           172.17.0.1/16 
+br-844b959f3fab  UP             172.18.0.1/16 fe80::2c55:83ff:fe5a:9739/64 
+vethc12aba6@if2  UP             fe80::30f5:eeff:fe30:bfd/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9000      0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9443      0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+tcp   LISTEN 0      4096            [::]:9000         [::]:*          
+tcp   LISTEN 0      4096            [::]:9443         [::]:*          
+
+[ DOCKER CONTAINERS ]
+
+
+----------------------------------------------------------------
+HOST: shellngn01 (192.168.3.155)
+OS:   Debian 12.13
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.155/24 fe80::20c:29ff:fe4d:c2af/64 
+docker0          UP             172.17.0.1/16 fe80::90f2:d3ff:fe6a:eac7/64 
+br-01ffc7e1f5b7  UP             172.18.0.1/16 fe80::5049:67ff:fea6:ff15/64 
+veth84268d8@if2  UP             fe80::686d:aaff:fe16:a19f/64 
+vethc17dcc1@if2  UP             fe80::242c:3ff:fe77:575f/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+tcp   LISTEN 0      4096         0.0.0.0:8080      0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9001      0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:8080         [::]:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+tcp   LISTEN 0      4096            [::]:9001         [::]:*          
+
+[ DOCKER CONTAINERS ]
+NAMES             STATUS                PORTS
+portainer_agent   Up 4 days             0.0.0.0:9001->9001/tcp, [::]:9001->9001/tcp
+shellngn          Up 5 days (healthy)   0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp
+
+----------------------------------------------------------------
+HOST: proxmoxbkup (192.168.3.188)
+OS:   Debian 12.12
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.188/24 fe80::20c:29ff:fe5c:856/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:55322      0.0.0.0:*          
+udp   UNCONN 0      0               [::]:56373         [::]:*          
+udp   UNCONN 0      0               [::]:5353          [::]:*          
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      100          0.0.0.0:25         0.0.0.0:*          
+tcp   LISTEN 0      1024       127.0.0.1:82         0.0.0.0:*          
+tcp   LISTEN 0      128        127.0.0.1:631        0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+tcp   LISTEN 0      100             [::]:25            [::]:*          
+tcp   LISTEN 0      128            [::1]:631           [::]:*          
+tcp   LISTEN 0      1024               *:8007             *:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: wordpress (192.168.3.191)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.191/24 
+docker0          DOWN           172.17.0.1/16 
+br-51d83a80628c  DOWN           172.18.0.1/16 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:48965      0.0.0.0:*          
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0               [::]:5353          [::]:*          
+udp   UNCONN 0      0               [::]:50227         [::]:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:631        0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:41529      0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*          
+tcp   LISTEN 0      4096           [::1]:631           [::]:*          
+tcp   LISTEN 0      4096            [::]:22            [::]:*          
+
+[ DOCKER CONTAINERS ]
+NAMES     STATUS    PORTS
+
+----------------------------------------------------------------
+HOST: openclaw (192.168.50.20)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.50.20/24 fe80::20c:29ff:fe35:d5dd/64 
+br-5deda7a52b07  UP             172.18.0.1/16 fe80::5cb2:b3ff:fe16:8391/64 
+docker0          DOWN           172.17.0.1/16 
+vethc699852@if2  UP             fe80::703b:15ff:fe0b:8c1c/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:40305      0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:18790      0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:18789      0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+
+[ DOCKER CONTAINERS ]
+NAMES                         STATUS      PORTS
+openclaw-openclaw-gateway-1   Up 3 days   127.0.0.1:18789-18790->18789-18790/tcp
+
+----------------------------------------------------------------
+HOST: kuma-esxi (192.168.3.193)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.193/24 fe80::20c:29ff:fe05:ec0c/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0         127.0.0.54:53        0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+tcp   LISTEN 0      511                *:3001            *:*          
+tcp   LISTEN 0      4096            [::]:22           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: kuma-prox (192.168.3.194)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0@if11        UP             192.168.3.194/24 fe80::be24:11ff:fe4a:5e11/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0         127.0.0.54:53        0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+tcp   LISTEN 0      100        127.0.0.1:25        0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:22           [::]:*          
+tcp   LISTEN 0      100            [::1]:25           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: kuma-db (192.168.3.195)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.195/24 fe80::20c:29ff:fec3:5f92/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0         127.0.0.54:53        0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      80           0.0.0.0:3306      0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:22           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: artemis (192.168.3.196)
+OS:   Debian 12.13
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.196/24 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q   Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0        192.168.3.196:3702       0.0.0.0:*          
+udp   UNCONN 0      0      239.255.255.250:3702       0.0.0.0:*          
+udp   UNCONN 0      0           127.0.0.54:53         0.0.0.0:*          
+udp   UNCONN 0      0        127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:111        0.0.0.0:*          
+udp   UNCONN 0      0            127.0.0.1:323        0.0.0.0:*          
+udp   UNCONN 0      0            127.0.0.1:735        0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:41929      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:50123      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:5355       0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:2049       0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:43543      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:60038      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:52029      0.0.0.0:*          
+udp   UNCONN 0      0                 [::]:111           [::]:*          
+udp   UNCONN 0      0                 [::]:53528         [::]:*          
+udp   UNCONN 0      0                [::1]:323           [::]:*          
+udp   UNCONN 0      0                 [::]:5353          [::]:*          
+udp   UNCONN 0      0                 [::]:5355          [::]:*          
+udp   UNCONN 0      0                 [::]:58667         [::]:*          
+udp   UNCONN 0      0                 [::]:2049          [::]:*          
+udp   UNCONN 0      0                 [::]:43536         [::]:*          
+udp   UNCONN 0      0                 [::]:36179         [::]:*          
+tcp   LISTEN 0      4096     127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:40019      0.0.0.0:*          
+tcp   LISTEN 0      64             0.0.0.0:35191      0.0.0.0:*          
+tcp   LISTEN 0      64             0.0.0.0:2049       0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:39455      0.0.0.0:*          
+tcp   LISTEN 0      5        192.168.3.196:5357       0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:5355       0.0.0.0:*          
+tcp   LISTEN 0      4096        127.0.0.54:53         0.0.0.0:*          
+tcp   LISTEN 0      50             0.0.0.0:445        0.0.0.0:*          
+tcp   LISTEN 0      511            0.0.0.0:80         0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:111        0.0.0.0:*          
+tcp   LISTEN 0      128            0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      50             0.0.0.0:139        0.0.0.0:*          
+tcp   LISTEN 0      4096              [::]:59723         [::]:*          
+tcp   LISTEN 0      64                [::]:2049          [::]:*          
+tcp   LISTEN 0      4096              [::]:44031         [::]:*          
+tcp   LISTEN 0      64                [::]:34283         [::]:*          
+tcp   LISTEN 0      4096              [::]:5355          [::]:*          
+tcp   LISTEN 0      50                [::]:445           [::]:*          
+tcp   LISTEN 0      511               [::]:80            [::]:*          
+tcp   LISTEN 0      4096              [::]:111           [::]:*          
+tcp   LISTEN 0      128               [::]:22            [::]:*          
+tcp   LISTEN 0      50                [::]:139           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: enigma (192.168.3.197)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.197/24 fe80::20c:29ff:feec:39b/64 
+docker_gwbridge  DOWN           172.18.0.1/16 
+br-1022ebd87683  UP             172.20.0.1/16 fe80::5820:13ff:fe78:2462/64 
+br-815a36924e7d  DOWN           172.19.0.1/16 
+docker0          UP             172.17.0.1/16 fe80::985c:45ff:fe10:dc3e/64 
+vethc171786@if2  UP             fe80::20d9:cfff:fe62:672/64 
+vethbc46806@if2  UP             fe80::20b3:6eff:fe02:3065/64 
+veth163c2df@if2  UP             fe80::2ce2:23ff:fe02:bd75/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0         127.0.0.54:53        0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:80        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:81        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:443       0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9443      0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:80           [::]:*          
+tcp   LISTEN 0      4096            [::]:81           [::]:*          
+tcp   LISTEN 0      4096            [::]:22           [::]:*          
+tcp   LISTEN 0      4096            [::]:443          [::]:*          
+tcp   LISTEN 0      4096            [::]:9443         [::]:*          
+
+[ DOCKER CONTAINERS ]
+
+
+----------------------------------------------------------------
+HOST: pnetlab01 (192.168.3.198)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.198/24 fe80::20c:29ff:fe13:e66d/64 
+docker0          DOWN           172.17.0.1/16 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:37375      0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:22            [::]:*          
+
+[ DOCKER CONTAINERS ]
+
+
+----------------------------------------------------------------
+HOST: bunter (192.168.3.212)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.212/24 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:55509      0.0.0.0:*          
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0               [::]:60088         [::]:*          
+udp   UNCONN 0      0               [::]:5353          [::]:*          
+tcp   LISTEN 0      4096       127.0.0.1:631        0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:22            [::]:*          
+tcp   LISTEN 0      4096           [::1]:631           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: quigon (192.168.3.214)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.214/24 fe80::20c:29ff:fea1:7950/64 
+docker0          UP             172.17.0.1/16 fe80::b80b:d1ff:fe50:d6fa/64 
+br-f89dc276c455  UP             172.18.0.1/16 fe80::80d0:14ff:fee0:7146/64 
+veth1a229d0@if2  UP             fe80::642b:cdff:fe90:7d46/64 
+veth9f1a7cf@if2  UP             fe80::5097:9bff:fe22:a7b3/64 
+veth9eee619@if2  UP             fe80::c4ef:3cff:fe5b:8581/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0         127.0.0.54:53        0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:9001      0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:5678      0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:9001         [::]:*          
+tcp   LISTEN 0      4096            [::]:22           [::]:*          
+tcp   LISTEN 0      4096            [::]:5678         [::]:*          
+
+[ DOCKER CONTAINERS ]
+NAMES             STATUS      PORTS
+portainer_agent   Up 4 days   0.0.0.0:9001->9001/tcp, [::]:9001->9001/tcp
+n8n               Up 4 days   0.0.0.0:5678->5678/tcp, [::]:5678->5678/tcp
+n8n-postgres      Up 4 days   5432/tcp
+
+----------------------------------------------------------------
+HOST: proximo (192.168.3.215)
+OS:   Debian 12.13
+*** PROXMOX HOST — UFW will be SKIPPED during hardening ***
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp3s0           UP             
+enp4s0           UP             
+enp5s0           UP             
+enp6s0           DOWN           
+vmbr0            UP             192.168.3.215/24 fe80::7e2b:e1ff:fe13:850b/64 
+bond0            UP             
+vmbr1            UP             fe80::7e2b:e1ff:fe13:850c/64 
+vmbr2            UNKNOWN        fe80::84f2:dfff:fe32:e6cd/64 
+tap101i0         UNKNOWN        
+fwbr101i0        UP             
+fwpr101p0@fwln101i0 UP             
+fwln101i0@fwpr101p0 UP             
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:111       0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:323       0.0.0.0:*          
+udp   UNCONN 0      0               [::]:111          [::]:*          
+udp   UNCONN 0      0              [::1]:323          [::]:*          
+tcp   LISTEN 0      4096       127.0.0.1:85        0.0.0.0:*          
+tcp   LISTEN 0      100        127.0.0.1:25        0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:111       0.0.0.0:*          
+tcp   LISTEN 0      100            [::1]:25           [::]:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+tcp   LISTEN 0      4096            [::]:111          [::]:*          
+tcp   LISTEN 0      4096               *:3128            *:*          
+tcp   LISTEN 0      4096               *:5201            *:*          
+tcp   LISTEN 0      4096               *:8006            *:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: postoffice (192.168.3.220)
+OS:   Linux Mint 21.3
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens33            UP             192.168.3.220/24 fe80::20c:29ff:fea4:1ab9/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:35549      0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0               [::]:34929         [::]:*          
+udp   UNCONN 0      0               [::]:5353          [::]:*          
+tcp   LISTEN 0      100          0.0.0.0:25         0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      128        127.0.0.1:631        0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      100             [::]:25            [::]:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+tcp   LISTEN 0      128            [::1]:631           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: t-dns (192.168.3.221)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0@if16        UP             192.168.3.221/24 fe80::be24:11ff:fe3c:6673/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:53        0.0.0.0:*          
+udp   UNCONN 0      0               [::]:53           [::]:*          
+tcp   LISTEN 0      100        127.0.0.1:25        0.0.0.0:*          
+tcp   LISTEN 0      100          0.0.0.0:53        0.0.0.0:*          
+tcp   LISTEN 0      100            [::1]:25           [::]:*          
+tcp   LISTEN 0      4096               *:22              *:*          
+tcp   LISTEN 0      100             [::]:53           [::]:*          
+tcp   LISTEN 0      512                *:5380            *:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: proximus (192.168.3.223)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens18            UP             192.168.3.223/24 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:39351      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0               [::]:53780         [::]:*          
+udp   UNCONN 0      0               [::]:5353          [::]:*          
+tcp   LISTEN 0      128        127.0.0.1:631        0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+tcp   LISTEN 0      128            [::1]:631           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: thor (192.168.3.228)
+OS:   Debian 13.0
+*** PROXMOX HOST — UFW will be SKIPPED during hardening ***
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp2s0           UP             
+enp3s0           DOWN           
+enp4s0           DOWN           
+enp5s0           DOWN           
+vmbr0            UP             192.168.3.228/24 fe80::62be:b4ff:fe16:18d0/64 
+veth100i0@if2    UP             
+tap101i0         UNKNOWN        
+fwbr101i0        UP             
+fwpr101p0@fwln101i0 UP             
+fwln101i0@fwpr101p0 UP             
+veth102i0@if2    UP             
+fwbr102i0        UP             
+fwpr102p0@fwln102i0 UP             
+fwln102i0@fwpr102p0 UP             
+veth104i0@if2    UP             
+fwbr104i0        UP             
+fwpr104p0@fwln104i0 UP             
+fwln104i0@fwpr104p0 UP             
+veth106i0@if2    UP             
+fwbr106i0        UP             
+fwpr106p0@fwln106i0 UP             
+fwln106i0@fwpr106p0 UP             
+tap105i0         UNKNOWN        
+fwbr105i0        UP             
+fwpr105p0@fwln105i0 UP             
+fwln105i0@fwpr105p0 UP             
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0      192.168.3.228:5405       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:111        0.0.0.0:*          
+udp   UNCONN 0      0      192.168.3.255:137        0.0.0.0:*          
+udp   UNCONN 0      0      192.168.3.228:137        0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:137        0.0.0.0:*          
+udp   UNCONN 0      0      192.168.3.255:138        0.0.0.0:*          
+udp   UNCONN 0      0      192.168.3.228:138        0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:138        0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:323        0.0.0.0:*          
+udp   UNCONN 0      0               [::]:111           [::]:*          
+udp   UNCONN 0      0              [::1]:323           [::]:*          
+tcp   LISTEN 0      4096       127.0.0.1:61000      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6804       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6805       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6806       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6807       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6800       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6801       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6802       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6803       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6808       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6809       0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:6789       0.0.0.0:*          
+tcp   LISTEN 0      50           0.0.0.0:445        0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:111        0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      50           0.0.0.0:139        0.0.0.0:*          
+tcp   LISTEN 0      100        127.0.0.1:25         0.0.0.0:*          
+tcp   LISTEN 0      4096       127.0.0.1:85         0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.228:3300       0.0.0.0:*          
+tcp   LISTEN 0      100            [::1]:25            [::]:*          
+tcp   LISTEN 0      50              [::]:445           [::]:*          
+tcp   LISTEN 0      4096            [::]:111           [::]:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+tcp   LISTEN 0      50              [::]:139           [::]:*          
+tcp   LISTEN 0      4096               *:3128             *:*          
+tcp   LISTEN 0      4096               *:8006             *:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: loki (192.168.3.229)
+OS:   Debian 13.0
+*** PROXMOX HOST — UFW will be SKIPPED during hardening ***
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp2s0           UP             
+enp3s0           DOWN           
+enp4s0           DOWN           
+enp5s0           DOWN           
+vmbr0            UP             192.168.3.229/24 fe80::62be:b4ff:fe16:cb0c/64 
+veth108i0@if2    UP             
+fwbr108i0        UP             
+fwpr108p0@fwln108i0 UP             
+fwln108i0@fwpr108p0 UP             
+veth103i0@if2    UP             
+fwbr103i0        UP             
+fwpr103p0@fwln103i0 UP             
+fwln103i0@fwpr103p0 UP             
+tap107i0         UNKNOWN        
+fwbr107i0        UP             
+fwpr107p0@fwln107i0 UP             
+fwln107i0@fwpr107p0 UP             
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:111       0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:323       0.0.0.0:*          
+udp   UNCONN 0      0      192.168.3.229:5405      0.0.0.0:*          
+udp   UNCONN 0      0               [::]:111          [::]:*          
+udp   UNCONN 0      0              [::1]:323          [::]:*          
+tcp   LISTEN 0      4096       127.0.0.1:85        0.0.0.0:*          
+tcp   LISTEN 0      100        127.0.0.1:25        0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6809      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6808      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6811      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6810      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6805      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6804      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6807      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6806      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6801      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6800      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6803      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6802      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:6789      0.0.0.0:*          
+tcp   LISTEN 0      512    192.168.3.229:3300      0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:111       0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      100            [::1]:25           [::]:*          
+tcp   LISTEN 0      4096               *:8006            *:*          
+tcp   LISTEN 0      4096               *:3128            *:*          
+tcp   LISTEN 0      4096            [::]:111          [::]:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: qdevice-homelab (192.168.3.230)
+OS:   Debian 13.1
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens192           UP             192.168.3.230/24 192.168.3.23/24 fe80::20c:29ff:fe5d:fbc5/64 fe80::7751:3b88:9794:fabe/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q                      Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0                            192.168.3.23:68        0.0.0.0:*          
+udp   UNCONN 0      0      [fe80::7751:3b88:9794:fabe]%ens192:546          [::]:*          
+udp   UNCONN 0      0       [fe80::20c:29ff:fe5d:fbc5]%ens192:546          [::]:*          
+tcp   LISTEN 0      128                               0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      10                                      *:5403            *:*          
+tcp   LISTEN 0      128                                  [::]:22           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: smallstep-ca (192.168.3.239)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens18            UP             192.168.3.239/24 fe80::be24:11ff:feb2:dc92/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess                           
+udp   UNCONN 0      0         127.0.0.54:53        0.0.0.0:*                                     
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*                                     
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*                                     
+tcp   LISTEN 0      4096      127.0.0.54:53        0.0.0.0:*                                     
+tcp   LISTEN 0      4096         0.0.0.0:22        0.0.0.0:*                                     
+tcp   LISTEN 0      4096               *:8443            *:*    users:(("step-ca",pid=726,fd=11))
+tcp   LISTEN 0      4096            [::]:22           [::]:*                                     
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: twingate (192.168.3.249)
+OS:   Ubuntu 24.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0@if7         UP             192.168.3.249/24 fe80::be24:11ff:fe2d:5b2a/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:48264      0.0.0.0:*          
+udp   UNCONN 0      0         127.0.0.54:53         0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:35549      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:36925      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:38201      0.0.0.0:*          
+tcp   LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*          
+tcp   LISTEN 0      100        127.0.0.1:25         0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      4096            [::]:22            [::]:*          
+tcp   LISTEN 0      100            [::1]:25            [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: time01 (192.168.3.250)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.250/24 fe80::20c:29ff:fe75:d735/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:123       0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:323       0.0.0.0:*          
+udp   UNCONN 0      0              [::1]:323          [::]:*          
+tcp   LISTEN 0      4096       127.0.0.1:2947      0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096           [::1]:2947         [::]:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: time02 (192.168.3.251)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+ens34            UP             192.168.3.251/24 fe80::20c:29ff:fe6d:6133/64 
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+udp   UNCONN 0      0      127.0.0.53%lo:53        0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:123       0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:323       0.0.0.0:*          
+udp   UNCONN 0      0              [::1]:323          [::]:*          
+tcp   LISTEN 0      128          0.0.0.0:22        0.0.0.0:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53        0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: helios (192.168.4.210)
+OS:   Debian 12.12
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eno1             UP             192.168.4.210/24 
+wlp1s0           DOWN           
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q   Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0              0.0.0.0:2049       0.0.0.0:*          
+udp   UNCONN 0      0        192.168.4.210:51660      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:60327      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:56735      0.0.0.0:*          
+udp   UNCONN 0      0        192.168.4.210:3702       0.0.0.0:*          
+udp   UNCONN 0      0      239.255.255.250:3702       0.0.0.0:*          
+udp   UNCONN 0      0           127.0.0.54:53         0.0.0.0:*          
+udp   UNCONN 0      0        127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:111        0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:57460      0.0.0.0:*          
+udp   UNCONN 0      0            127.0.0.1:323        0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:53806      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:41669      0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:58171      0.0.0.0:*          
+udp   UNCONN 0      0            127.0.0.1:898        0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0              0.0.0.0:5355       0.0.0.0:*          
+udp   UNCONN 0      0      239.255.255.250:1900       0.0.0.0:*          
+udp   UNCONN 0      0                 [::]:2049          [::]:*          
+udp   UNCONN 0      0                 [::]:48131         [::]:*          
+udp   UNCONN 0      0                 [::]:111           [::]:*          
+udp   UNCONN 0      0                 [::]:53363         [::]:*          
+udp   UNCONN 0      0                [::1]:323           [::]:*          
+udp   UNCONN 0      0                 [::]:45451         [::]:*          
+udp   UNCONN 0      0                 [::]:62640         [::]:*          
+udp   UNCONN 0      0                 [::]:5353          [::]:*          
+udp   UNCONN 0      0                 [::]:5355          [::]:*          
+udp   UNCONN 0      0                 [::]:50629         [::]:*          
+tcp   LISTEN 0      5        192.168.4.210:5357       0.0.0.0:*          
+tcp   LISTEN 0      4096     127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      64             0.0.0.0:2049       0.0.0.0:*          
+tcp   LISTEN 0      64             0.0.0.0:43365      0.0.0.0:*          
+tcp   LISTEN 0      4096        127.0.0.54:53         0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:5355       0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:53961      0.0.0.0:*          
+tcp   LISTEN 0      100          127.0.0.1:25         0.0.0.0:*          
+tcp   LISTEN 0      50             0.0.0.0:139        0.0.0.0:*          
+tcp   LISTEN 0      16             0.0.0.0:8200       0.0.0.0:*          
+tcp   LISTEN 0      128            0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      511            0.0.0.0:80         0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:111        0.0.0.0:*          
+tcp   LISTEN 0      50             0.0.0.0:445        0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:53741      0.0.0.0:*          
+tcp   LISTEN 0      4096           0.0.0.0:41239      0.0.0.0:*          
+tcp   LISTEN 0      64                [::]:43971         [::]:*          
+tcp   LISTEN 0      64                [::]:2049          [::]:*          
+tcp   LISTEN 0      4096              [::]:5355          [::]:*          
+tcp   LISTEN 0      4096              [::]:58195         [::]:*          
+tcp   LISTEN 0      50                [::]:139           [::]:*          
+tcp   LISTEN 0      4096              [::]:45221         [::]:*          
+tcp   LISTEN 0      128               [::]:22            [::]:*          
+tcp   LISTEN 0      4096              [::]:49257         [::]:*          
+tcp   LISTEN 0      4096              [::]:111           [::]:*          
+tcp   LISTEN 0      50                [::]:445           [::]:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+----------------------------------------------------------------
+HOST: milan (192.168.4.212)
+OS:   Ubuntu 22.04
+----------------------------------------------------------------
+
+[ NETWORK INTERFACES ]
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eno1             UP             192.168.4.212/24 fe80::cfd3:742b:c28a:e666/64 
+wlp1s0           DOWN           
+
+[ UFW STATUS ]
+
+
+[ LISTENING PORTS (ss -tlnup) ]
+Netid State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0            0.0.0.0:5353       0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:1901       0.0.0.0:*          
+udp   UNCONN 0      0      192.168.4.212:34739      0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:56259      0.0.0.0:*          
+udp   UNCONN 0      0      192.168.4.212:48586      0.0.0.0:*          
+udp   UNCONN 0      0      192.168.4.212:52890      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:32410      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:32412      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:32413      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:32414      0.0.0.0:*          
+udp   UNCONN 0      0      127.0.0.53%lo:53         0.0.0.0:*          
+udp   UNCONN 0      0          127.0.0.1:33014      0.0.0.0:*          
+udp   UNCONN 0      0            0.0.0.0:41260      0.0.0.0:*          
+udp   UNCONN 0      0               [::]:5353          [::]:*          
+udp   UNCONN 0      0               [::]:60718         [::]:*          
+tcp   LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+tcp   LISTEN 0      128          0.0.0.0:22         0.0.0.0:*          
+tcp   LISTEN 0      128        127.0.0.1:631        0.0.0.0:*          
+tcp   LISTEN 0      1024       127.0.0.1:32401      0.0.0.0:*          
+tcp   LISTEN 0      128        127.0.0.1:40733      0.0.0.0:*          
+tcp   LISTEN 0      128        127.0.0.1:32600      0.0.0.0:*          
+tcp   LISTEN 0      128             [::]:22            [::]:*          
+tcp   LISTEN 0      2              [::1]:3350          [::]:*          
+tcp   LISTEN 0      128            [::1]:631           [::]:*          
+tcp   LISTEN 0      2                  *:3389             *:*          
+tcp   LISTEN 0      1024               *:32400            *:*          
+
+[ DOCKER CONTAINERS ]
+Docker not running or socket not accessible as saquadri
+
+================================================================
+END OF REPORT
+================================================================

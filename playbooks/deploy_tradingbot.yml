@@ -1,0 +1,75 @@
+---
+# ============================================================
+# playbooks/deploy_tradingbot.yml
+# Deploys the Black Cat Trading Bot to enigma (192.168.3.130)
+#
+# Prerequisites:
+#   - Vault secrets added to group_vars/vault.yml
+#     (see VAULT_SECRETS_SETUP.md for instructions)
+#   - enigma is in [managed_linux] and already hardened
+#
+# Usage:
+#   # Dry run (no changes)
+#   ansible-playbook playbooks/deploy_tradingbot.yml --check --diff
+#
+#   # Full deploy
+#   ansible-playbook playbooks/deploy_tradingbot.yml
+#
+#   # Restart service only (after manual config change)
+#   ansible-playbook playbooks/deploy_tradingbot.yml --tags tradingbot_service
+#
+#   # After deploy, manual health check:
+#   curl http://192.168.3.130:5000/health
+# ============================================================
+
+- name: Deploy Black Cat Trading Bot to enigma
+  hosts: enigma
+  gather_facts: yes
+  any_errors_fatal: true
+
+  vars_files:
+    - ../group_vars/vault.yml
+
+  pre_tasks:
+    - name: Verify SSH connectivity before deploy
+      ping:
+
+    - name: Show deployment target and mode
+      debug:
+        msg: >-
+          Deploying Black Cat Trading Bot to {{ inventory_hostname }}
+          ({{ ansible_host }}) —
+          Demo mode: {{ tradingbot_demo_mode | default('true') }} |
+          Leverage: {{ tradingbot_leverage | default(2) }}x |
+          Risk: {{ tradingbot_risk_percent | default('1.0') }}%
+
+  roles:
+    - role: tradingbot
+      tags: [tradingbot]
+
+  post_tasks:
+    - name: Wait for tradingbot port to be reachable
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ tradingbot_port | default(5000) }}"
+        timeout: 30
+      delegate_to: localhost
+
+    - name: Health check — confirm bot is responding
+      uri:
+        url: "http://{{ ansible_host }}:{{ tradingbot_port | default(5000) }}/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+      delegate_to: localhost
+      register: health_check
+      retries: 3
+      delay: 5
+      until: health_check.status == 200
+
+    - name: Health check passed
+      debug:
+        msg: >-
+          Trading bot is live at
+          http://{{ ansible_host }}:{{ tradingbot_port | default(5000) }}/health
+          — Next step: add public hostname in Cloudflare Zero Trust dashboard.

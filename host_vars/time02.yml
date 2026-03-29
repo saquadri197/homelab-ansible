@@ -1,0 +1,8 @@
+# time02 (192.168.3.251) - Ubuntu 22.04 - NTP server
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+ufw_allowed_udp_ports:
+  - 123    # NTP

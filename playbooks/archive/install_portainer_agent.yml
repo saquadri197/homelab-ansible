@@ -1,0 +1,88 @@
+---
+- name: Install Portainer agent on Docker hosts (idempotent)
+  hosts: managed_linux
+  become: true
+  gather_facts: true
+
+  vars:
+    mgmt_subnet: "192.168.3.0/24"
+
+  tasks:
+
+    # ------------------------
+    # CHECK DOCKER
+    # ------------------------
+
+    - name: Check if docker exists
+      command: which docker
+      register: docker_binary
+      changed_when: false
+      failed_when: false
+
+    - name: Skip host if Docker is not installed
+      meta: end_host
+      when: docker_binary.rc != 0
+
+    - name: Ensure Docker is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    # ------------------------
+    # CHECK PORTAINER AGENT
+    # ------------------------
+
+    - name: Check if portainer_agent container exists
+      command: docker ps -a --format '{{ "{{.Names}}" }}'
+      register: container_list
+      changed_when: false
+
+    - name: Set fact if agent exists
+      set_fact:
+        portainer_agent_exists: "{{ 'portainer_agent' in container_list.stdout_lines }}"
+
+    - name: Check if portainer_agent is running
+      command: docker inspect -f '{{ "{{.State.Running}}" }}' portainer_agent
+      register: agent_running
+      changed_when: false
+      failed_when: false
+      when: portainer_agent_exists
+
+    # ------------------------
+    # INSTALL ONLY IF MISSING
+    # ------------------------
+
+    - name: Create volume if needed
+      command: docker volume create portainer_agent_data
+      when: not portainer_agent_exists
+      changed_when: true
+
+    - name: Deploy Portainer agent if not present
+      command: >
+        docker run -d
+        --name portainer_agent
+        --restart=always
+        -p 9001:9001
+        -v /var/run/docker.sock:/var/run/docker.sock
+        -v /var/lib/docker/volumes:/var/lib/docker/volumes
+        -v /:/host
+        portainer/agent:latest
+      when: not portainer_agent_exists
+
+    - name: Start agent if exists but stopped
+      command: docker start portainer_agent
+      when:
+        - portainer_agent_exists
+        - agent_running.stdout != "true"
+
+    # ------------------------
+    # FIREWALL RULE
+    # ------------------------
+
+    - name: Allow Portainer agent from management subnet
+      community.general.ufw:
+        rule: allow
+        port: "9001"
+        proto: tcp
+        src: "{{ mgmt_subnet }}"

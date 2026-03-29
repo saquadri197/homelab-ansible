@@ -1,0 +1,6 @@
+# jellyq (192.168.3.112) - Jellyfin media server
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 8096   # Jellyfin HTTP
+  - 8920   # Jellyfin HTTPS

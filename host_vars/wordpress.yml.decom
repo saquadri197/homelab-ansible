@@ -1,0 +1,7 @@
+# wordpress (192.168.3.191) - Ubuntu 24.04
+# No public ports currently listening (containers down or behind proxy)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80    # HTTP
+  - 443   # HTTPS

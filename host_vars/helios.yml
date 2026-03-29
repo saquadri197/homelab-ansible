@@ -1,0 +1,11 @@
+# helios (192.168.4.210) - Debian 12 - OpenMediaVault NAS
+# NFS (2049), Samba (139/445), HTTP (80), Vault (8200), NFS portmap (111)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80     # OMV web UI
+  - 111    # NFS portmapper
+  - 139    # Samba NetBIOS
+  - 445    # Samba SMB
+  - 2049   # NFS
+  - 8200   # HashiCorp Vault

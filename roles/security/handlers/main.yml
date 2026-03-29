@@ -1,0 +1,17 @@
+---
+- name: Reload UFW
+  ufw:
+    state: reloaded
+  become: yes
+
+- name: Restart SSH
+  service:
+    name: "{{ 'ssh' if ansible_os_family == 'Debian' else 'sshd' }}"
+    state: restarted
+  become: yes
+
+- name: Restart fail2ban
+  service:
+    name: fail2ban
+    state: restarted
+  become: yes

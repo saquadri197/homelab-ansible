@@ -1,0 +1,9 @@
+# scb-auth-01 (192.168.3.126) - Ubuntu 22.04
+# Containers: Authentik server (9000/9443), worker, postgresql, redis
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 9000   # Authentik HTTP
+  - 9443   # Authentik HTTPS

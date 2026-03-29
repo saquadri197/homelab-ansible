@@ -1,0 +1,8 @@
+# cf-edge-pve01 (192.168.3.122) - Debian 12
+# Cloudflare tunnel edge node - no inbound public ports needed
+# Port 25 and 20241 are localhost-only
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443

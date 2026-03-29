@@ -1,0 +1,10 @@
+# portainer01 (192.168.3.128) - Debian 12
+# Running Portainer CE on 9000/9443
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 9000   # Portainer HTTP UI
+  - 9001   # Portainer agent
+  - 9443   # Portainer HTTPS UI

@@ -1,0 +1,8 @@
+# smallstep-ca (192.168.3.239) - Ubuntu 24.04
+# Step CA ACME/HTTPS on 8443
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 8443   # Step CA ACME endpoint

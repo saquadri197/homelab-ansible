@@ -1,0 +1,9 @@
+# time01 (192.168.3.250) - Ubuntu 22.04 - NTP server
+# NTP on UDP 123, GPS daemon on 2947 (localhost only)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+ufw_allowed_udp_ports:
+  - 123    # NTP

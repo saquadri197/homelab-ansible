@@ -1,0 +1,40 @@
+---
+# ============================================================
+# playbooks/site.yml
+# Master playbook — runs all roles against the right groups.
+#
+# Full run:
+#   ansible-playbook playbooks/site.yml
+#
+# Common scoping flags:
+#   --limit wekan01                    single host
+#   --limit docker_hosts               docker nodes only
+#   --tags hardening                   skip Docker/Portainer
+#   --tags docker,portainer_agent      skip hardening
+#   --check --diff                     dry run
+# ============================================================
+
+- name: Common baseline + security hardening
+  hosts: managed_linux
+  gather_facts: yes
+  serial: 5
+  any_errors_fatal: false
+
+  roles:
+    - role: common
+      tags: [common, baseline, hardening]
+
+    - role: security
+      tags: [security, hardening, ufw, ssh, fail2ban]
+
+- name: Docker install + Portainer agent deployment
+  hosts: docker_hosts
+  gather_facts: yes
+  any_errors_fatal: false
+
+  roles:
+    - role: docker
+      tags: [docker]
+
+    - role: portainer_agent
+      tags: [portainer_agent, portainer]

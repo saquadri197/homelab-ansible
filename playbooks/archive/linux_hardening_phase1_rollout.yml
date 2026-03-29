@@ -1,0 +1,61 @@
+---
+- name: Linux Hardening Phase 1 (Rollout)
+  hosts: managed_linux
+  become: true
+  gather_facts: true
+
+  vars:
+    mgmt_subnet: "192.168.3.0/24"
+
+  tasks:
+    - name: Ensure saquadri is in sudo group
+      user:
+        name: saquadri
+        groups: sudo
+        append: true
+
+    - name: Install UFW on Debian/Ubuntu without refreshing cache
+      apt:
+        name: ufw
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Set default deny incoming on Debian/Ubuntu
+      community.general.ufw:
+        direction: incoming
+        policy: deny
+      when: ansible_os_family == "Debian"
+
+    - name: Set default allow outgoing on Debian/Ubuntu
+      community.general.ufw:
+        direction: outgoing
+        policy: allow
+      when: ansible_os_family == "Debian"
+
+    - name: Allow SSH from management subnet on Debian/Ubuntu
+      community.general.ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+        src: "{{ mgmt_subnet }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Enable UFW on Debian/Ubuntu
+      community.general.ufw:
+        state: enabled
+      when: ansible_os_family == "Debian"
+
+    - name: Disable root SSH login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*PermitRootLogin\s+'
+        line: 'PermitRootLogin no'
+        backup: true
+      notify: restart ssh
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+

@@ -1,0 +1,65 @@
+---
+- name: Linux Hardening Phase 2
+  hosts: managed_linux
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Ensure fail2ban is installed on Debian/Ubuntu
+      apt:
+        name: fail2ban
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure fail2ban is enabled and started
+      service:
+        name: fail2ban
+        enabled: true
+        state: started
+      when: ansible_os_family == "Debian"
+
+    - name: Disable SSH password authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*PasswordAuthentication\s+'
+        line: 'PasswordAuthentication no'
+        backup: true
+      notify: restart ssh
+
+    - name: Ensure public key authentication is enabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*PubkeyAuthentication\s+'
+        line: 'PubkeyAuthentication yes'
+        backup: true
+      notify: restart ssh
+
+    - name: Disable challenge response authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*ChallengeResponseAuthentication\s+'
+        line: 'ChallengeResponseAuthentication no'
+        backup: true
+      notify: restart ssh
+
+    - name: Disable keyboard interactive authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*KbdInteractiveAuthentication\s+'
+        line: 'KbdInteractiveAuthentication no'
+        backup: true
+      notify: restart ssh
+
+    - name: Ensure UsePAM remains enabled
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*UsePAM\s+'
+        line: 'UsePAM yes'
+        backup: true
+      notify: restart ssh
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted

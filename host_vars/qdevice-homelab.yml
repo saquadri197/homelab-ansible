@@ -1,0 +1,8 @@
+# qdevice-homelab (192.168.3.230) - Debian 13
+# Proxmox quorum device - port 5403 must stay open
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 5403   # Proxmox corosync qdevice

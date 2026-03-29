@@ -1,0 +1,11 @@
+# t-dns (192.168.3.221) - Ubuntu 24.04 - Technitium DNS
+# DNS (53 TCP+UDP), Technitium web UI (5380)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 53     # DNS TCP
+  - 5380   # Technitium web UI
+ufw_allowed_udp_ports:
+  - 53     # DNS UDP

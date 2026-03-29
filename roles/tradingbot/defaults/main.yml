@@ -1,0 +1,36 @@
+---
+# ============================================================
+# roles/tradingbot/defaults/main.yml
+# Default variables for the Black Cat Trading Bot role.
+# Override per-host in host_vars/enigma.yml.
+# Secrets MUST come from Ansible Vault (group_vars/vault.yml).
+# ============================================================
+
+# ---- Service account ---------------------------------------
+tradingbot_user:  tradingbot
+tradingbot_group: tradingbot
+
+# ---- Paths -------------------------------------------------
+tradingbot_home:      /opt/tradingbot
+tradingbot_venv:      /opt/tradingbot/venv
+tradingbot_log_dir:   /var/log/tradingbot
+tradingbot_trade_log: /opt/tradingbot/trades.csv
+
+# ---- Network -----------------------------------------------
+tradingbot_port: 5000
+
+# CF edge node IPs — UFW source restriction for port 5000.
+# Only these hosts (the Cloudflare tunnel connectors) need
+# network access to enigma:5000. All other inbound is blocked.
+cf_edge_ips:
+  - 192.168.3.122   # cf-edge-pve01
+  - 192.168.3.123   # cf-edge-esx01
+
+# ---- Runtime settings (non-secret defaults) ----------------
+tradingbot_demo_mode:      "true"     # KEEP true until paper trading complete
+tradingbot_leverage:       2
+tradingbot_risk_percent:   "1.0"
+tradingbot_max_positions:  1
+tradingbot_atr_mult_sl:    "3.0"
+tradingbot_rr_ratio:       "1.5"
+tradingbot_default_inst_id: "ETH-USDT"

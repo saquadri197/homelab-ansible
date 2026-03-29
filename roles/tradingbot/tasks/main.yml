@@ -1,0 +1,152 @@
+---
+# ============================================================
+# roles/tradingbot/tasks/main.yml
+# Deploys the Black Cat Trading Bot on enigma (192.168.3.130).
+#
+# Idempotent — safe to re-run at any time.
+#
+# What this role does:
+#   1. Creates a locked-down 'tradingbot' service user
+#   2. Sets up /opt/tradingbot with Python venv
+#   3. Deploys source files + .env (secrets from Vault)
+#   4. Installs gunicorn and dependencies
+#   5. Configures systemd service (auto-start, auto-restart)
+#   6. Restricts UFW port 5000 to CF edge IPs only
+# ============================================================
+
+# ---- Service user ------------------------------------------
+
+- name: Create tradingbot group
+  group:
+    name: "{{ tradingbot_group }}"
+    system: yes
+    state: present
+  become: yes
+
+- name: Create tradingbot system user (no login shell)
+  user:
+    name: "{{ tradingbot_user }}"
+    group: "{{ tradingbot_group }}"
+    system: yes
+    shell: /usr/sbin/nologin
+    home: "{{ tradingbot_home }}"
+    create_home: no
+    comment: "Black Cat Trading Bot service account"
+  become: yes
+
+# ---- Directories -------------------------------------------
+
+- name: Create app directory
+  file:
+    path: "{{ tradingbot_home }}"
+    state: directory
+    owner: "{{ tradingbot_user }}"
+    group: "{{ tradingbot_group }}"
+    mode: "0750"
+  become: yes
+
+- name: Create log directory
+  file:
+    path: "{{ tradingbot_log_dir }}"
+    state: directory
+    owner: "{{ tradingbot_user }}"
+    group: "{{ tradingbot_group }}"
+    mode: "0750"
+  become: yes
+
+# ---- Python + venv -----------------------------------------
+
+- name: Install python3-venv
+  apt:
+    name: python3-venv
+    state: present
+    update_cache: no
+  become: yes
+  when: ansible_os_family == "Debian"
+
+- name: Create Python virtualenv
+  command: python3 -m venv "{{ tradingbot_venv }}"
+  args:
+    creates: "{{ tradingbot_venv }}/bin/activate"
+  become: yes
+
+- name: Set ownership of virtualenv
+  file:
+    path: "{{ tradingbot_venv }}"
+    state: directory
+    owner: "{{ tradingbot_user }}"
+    group: "{{ tradingbot_group }}"
+    recurse: yes
+  become: yes
+
+# ---- Bot source files --------------------------------------
+
+- name: Copy bot source files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ tradingbot_home }}/{{ item }}"
+    owner: "{{ tradingbot_user }}"
+    group: "{{ tradingbot_group }}"
+    mode: "0640"
+  loop:
+    - webhook_server.py
+    - config.py
+    - requirements.txt
+  become: yes
+  notify: Restart tradingbot
+
+- name: Install Python dependencies into venv
+  pip:
+    requirements: "{{ tradingbot_home }}/requirements.txt"
+    virtualenv: "{{ tradingbot_venv }}"
+    state: present
+  become: yes
+
+# ---- Secrets / .env ----------------------------------------
+
+- name: Deploy .env from Ansible Vault
+  template:
+    src: tradingbot.env.j2
+    dest: "{{ tradingbot_home }}/.env"
+    owner: "{{ tradingbot_user }}"
+    group: "{{ tradingbot_group }}"
+    mode: "0600"
+  become: yes
+  no_log: true
+  notify: Restart tradingbot
+
+# ---- Systemd service ---------------------------------------
+
+- name: Deploy systemd service unit
+  template:
+    src: tradingbot.service.j2
+    dest: /etc/systemd/system/tradingbot.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: yes
+  notify:
+    - Reload systemd
+    - Restart tradingbot
+
+- name: Enable and start tradingbot service
+  systemd:
+    name: tradingbot
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  become: yes
+  tags: [tradingbot_service]
+
+# ---- UFW: restrict port 5000 to CF edge IPs only -----------
+
+- name: "UFW — allow port {{ tradingbot_port }} from CF edge nodes only"
+  ufw:
+    rule: allow
+    port: "{{ tradingbot_port | string }}"
+    proto: tcp
+    src: "{{ item }}"
+    comment: "tradingbot — CF edge {{ item }}"
+  loop: "{{ cf_edge_ips }}"
+  become: yes
+  notify: Reload UFW

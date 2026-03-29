@@ -1,0 +1,101 @@
+---
+- name: Linux Hardening Phase 1 (Safe)
+  hosts: managed_linux
+  become: true
+  gather_facts: true
+
+  vars:
+    mgmt_subnet: "192.168.3.0/24"
+
+  pre_tasks:
+    - name: Check whether apt lock is present
+      shell: |
+        set -o pipefail
+        if fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || \
+           fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || \
+           fuser /var/cache/apt/archives/lock >/dev/null 2>&1; then
+          echo locked
+        else
+          echo clear
+        fi
+      args:
+        executable: /bin/bash
+      register: apt_lock_status
+      changed_when: false
+      failed_when: false
+      when: ansible_os_family == "Debian"
+
+    - name: Show apt lock status
+      debug:
+        msg: "APT lock status on {{ inventory_hostname }}: {{ apt_lock_status.stdout }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Check apt update health
+      command: apt-get update -o Acquire::Retries=1
+      register: apt_update_check
+      changed_when: false
+      failed_when: false
+      when:
+        - ansible_os_family == "Debian"
+        - apt_lock_status.stdout | default('clear') == "clear"
+
+    - name: Show apt update result summary
+      debug:
+        msg: >-
+          apt update rc={{ apt_update_check.rc | default('n/a') }}
+          on {{ inventory_hostname }}
+      when:
+        - ansible_os_family == "Debian"
+        - apt_lock_status.stdout | default('clear') == "clear"
+
+  tasks:
+    - name: Ensure saquadri is in sudo group
+      user:
+        name: saquadri
+        groups: sudo
+        append: true
+
+    - name: Install UFW on Debian/Ubuntu without refreshing cache
+      apt:
+        name: ufw
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Set default deny incoming on Debian/Ubuntu
+      community.general.ufw:
+        direction: incoming
+        policy: deny
+      when: ansible_os_family == "Debian"
+
+    - name: Set default allow outgoing on Debian/Ubuntu
+      community.general.ufw:
+        direction: outgoing
+        policy: allow
+      when: ansible_os_family == "Debian"
+
+    - name: Allow SSH from management subnet on Debian/Ubuntu
+      community.general.ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+        src: "{{ mgmt_subnet }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Enable UFW on Debian/Ubuntu
+      community.general.ufw:
+        state: enabled
+      when: ansible_os_family == "Debian"
+
+    - name: Disable root SSH login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*PermitRootLogin\s+'
+        line: 'PermitRootLogin no'
+        backup: true
+      notify: restart ssh
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted

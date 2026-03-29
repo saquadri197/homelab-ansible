@@ -1,0 +1,10 @@
+# netbox (192.168.3.120) - Debian 12
+# Listening: 22 (SSH), 60072/60073 (internal netbox services)
+# Docker: bridges present but no containers visible (likely need sudo)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 60072   # NetBox internal service
+  - 60073   # NetBox internal service

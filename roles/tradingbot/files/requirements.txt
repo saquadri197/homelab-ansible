@@ -1,0 +1,18 @@
+# Black Cat Trading Bot — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web framework for the webhook server
+flask>=3.0.0
+
+# HTTP client for Blofin API and Telegram calls
+requests>=2.31.0
+
+# Load API keys from the .env file
+python-dotenv>=1.0.0
+
+# Production WSGI server (use instead of Flask dev server for deployment)
+# Run with: gunicorn -w 1 -b 0.0.0.0:5000 webhook_server:app
+gunicorn>=21.2.0
+
+# Optional: better logging output
+colorlog>=6.8.0

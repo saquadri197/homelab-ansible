@@ -1,0 +1,72 @@
+---
+# ============================================================
+# roles/common/tasks/main.yml
+
+# Baseline host setup: packages, sudo, timezone, MOTD.
+# Idempotent — safe to re-run at any time.
+# ============================================================
+
+- name: Update apt cache (Debian/Ubuntu)
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+  become: yes
+
+- name: Install baseline packages
+  package:
+    name:
+      - sudo
+      - curl
+      - wget
+      - vim
+      - net-tools
+      - ca-certificates
+      - gnupg
+      - lsb-release
+      - python3
+      - python3-pip
+      - htop
+      - unattended-upgrades
+    state: present
+  become: yes
+
+- name: Ensure saquadri sudoers entry exists (NOPASSWD)
+  copy:
+    dest: /etc/sudoers.d/saquadri
+    content: "saquadri ALL=(ALL) NOPASSWD:ALL\n"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: "visudo -cf %s"
+  become: yes
+
+- name: Set timezone to America/New_York
+  timezone:
+    name: America/New_York
+  become: yes
+
+- name: Deploy MOTD banner
+  copy:
+    dest: /etc/motd
+    content: |
+      ============================================================
+       syedaq.com Homelab  |  Managed by Ansible (ansible01)
+       Unauthorized access is prohibited.
+      ============================================================
+    owner: root
+    group: root
+    mode: "0644"
+  become: yes
+
+- name: Enable unattended security upgrades
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    owner: root
+    group: root
+    mode: "0644"
+  become: yes
+  when: ansible_os_family == "Debian"

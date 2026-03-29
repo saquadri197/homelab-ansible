@@ -1,0 +1,50 @@
+---
+# ============================================================
+# roles/portainer_agent/tasks/main.yml
+# Deploys the Portainer agent as a Docker container.
+# Idempotent — recreates only if config has changed.
+# Only runs on hosts where Docker is confirmed running.
+# ============================================================
+
+- name: Verify Docker daemon is reachable
+  command: docker info
+  register: docker_info
+  changed_when: false
+  failed_when: false
+  become: yes
+
+- name: Abort if Docker is not running
+  fail:
+    msg: "Docker not running on {{ inventory_hostname }} — skipping Portainer agent deployment."
+  when: docker_info.rc != 0
+
+- name: Pull latest Portainer agent image
+  community.docker.docker_image:
+    name: portainer/agent
+    tag: latest
+    source: pull
+  become: yes
+
+- name: Deploy Portainer agent container
+  community.docker.docker_container:
+    name: portainer_agent
+    image: portainer/agent:latest
+    state: started
+    restart_policy: always
+    recreate: yes
+    ports:
+      - "{{ portainer_agent_port }}:9001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    env:
+      AGENT_SECRET: ""
+  become: yes
+  register: agent_result
+
+- name: Confirm agent status
+  debug:
+    msg: >-
+      {{ inventory_hostname }} ({{ ansible_host }}):
+      Portainer agent {{ 'deployed' if agent_result.changed else 'already running' }}
+      on port {{ portainer_agent_port }}

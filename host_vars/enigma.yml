@@ -1,0 +1,23 @@
+# host_vars/enigma.yml
+ansible_host: 192.168.3.130
+ansible_user: saquadri
+
+# UFW ports this host needs open (beyond the fleet baseline of 22/80/443)
+# NOTE: Port 5000 is NOT opened globally here — the tradingbot role handles it
+# with source-restricted rules (CF edge IPs only). See roles/tradingbot/tasks/main.yml.
+ufw_extra_ports:
+  - { port: 8080, proto: tcp, comment: "App service" }
+
+# Only set this if you're ready to enforce default-deny inbound
+# ufw_set_default_policy: true
+# Leave commented out until you've audited the host with audit_firewall.yml.
+
+# ── Black Cat Trading Bot (non-secret settings) ──────────────
+# Secrets (API keys, tokens) live in group_vars/vault.yml
+tradingbot_demo_mode:      "true"     # Change to "false" ONLY after paper trading
+tradingbot_leverage:       2
+tradingbot_risk_percent:   "1.0"
+tradingbot_max_positions:  1
+tradingbot_atr_mult_sl:    "3.0"
+tradingbot_rr_ratio:       "1.5"
+tradingbot_default_inst_id: "ETH-USDT"

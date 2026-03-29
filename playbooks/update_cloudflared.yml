@@ -1,0 +1,78 @@
+---
+- name: Update cloudflared to latest release
+  hosts: cloudflare_edge
+  become: true
+  vars:
+    cloudflared_arch: amd64
+    cloudflared_version: "latest"
+
+  tasks:
+    - name: Get installed cloudflared version
+      command: cloudflared --version
+      register: installed_version
+      changed_when: false
+      failed_when: false
+
+    - name: Show installed version
+      debug:
+        msg: "Currently installed: {{ installed_version.stdout }}"
+
+    - name: Get latest release version from GitHub
+      uri:
+        url: https://api.github.com/repos/cloudflare/cloudflared/releases/latest
+        return_content: true
+        headers:
+          Accept: application/vnd.github.v3+json
+      register: github_release
+      when: cloudflared_version == "latest"
+
+    - name: Set target version
+      set_fact:
+        target_version: >-
+          {{
+            github_release.json.tag_name
+            if cloudflared_version == 'latest'
+            else cloudflared_version
+          }}
+
+    - name: Show target version
+      debug:
+        msg: "Target version: {{ target_version }}"
+
+    - name: Check if already up to date
+      set_fact:
+        needs_update: "{{ target_version not in installed_version.stdout }}"
+
+    - name: Download cloudflared .deb
+      get_url:
+        url: "https://github.com/cloudflare/cloudflared/releases/download/{{ target_version }}/cloudflared-linux-{{ cloudflared_arch }}.deb"
+        dest: "/tmp/cloudflared-{{ target_version }}-{{ cloudflared_arch }}.deb"
+        mode: '0644'
+      when: needs_update
+
+    - name: Install cloudflared .deb
+      apt:
+        deb: "/tmp/cloudflared-{{ target_version }}-{{ cloudflared_arch }}.deb"
+      when: needs_update
+      notify: restart cloudflared
+
+    - name: Clean up downloaded .deb
+      file:
+        path: "/tmp/cloudflared-{{ target_version }}-{{ cloudflared_arch }}.deb"
+        state: absent
+      when: needs_update
+
+    - name: Verify installed version after update
+      command: cloudflared --version
+      register: final_version
+      changed_when: false
+
+    - name: Show final version
+      debug:
+        msg: "Installed version after run: {{ final_version.stdout }}"
+
+  handlers:
+    - name: restart cloudflared
+      systemd:
+        name: cloudflared
+        state: restarted

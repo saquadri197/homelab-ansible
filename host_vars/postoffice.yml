@@ -1,0 +1,8 @@
+# postoffice (192.168.3.220) - Linux Mint 21.3
+# Running SMTP on port 25
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 25     # SMTP

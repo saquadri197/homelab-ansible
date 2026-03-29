@@ -1,0 +1,95 @@
+---
+# ============================================================
+# roles/docker/tasks/main.yml
+# Installs Docker CE on Debian/Ubuntu hosts.
+# Skips gracefully if Docker is already installed.
+# Also opens the Portainer agent port in UFW.
+# ============================================================
+
+- name: Check if Docker is already installed
+  command: docker --version
+  register: docker_installed
+  changed_when: false
+  failed_when: false
+  become: yes
+
+- name: Install Docker prerequisites
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: yes
+  become: yes
+  when:
+    - ansible_os_family == "Debian"
+    - docker_installed.rc != 0
+
+- name: Add Docker GPG key
+  apt_key:
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg"
+    state: present
+  become: yes
+  when:
+    - ansible_os_family == "Debian"
+    - docker_installed.rc != 0
+
+- name: Add Docker apt repository
+  apt_repository:
+    repo: "deb [arch={{ ansible_architecture }}] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+    state: present
+    filename: docker
+  become: yes
+  when:
+    - ansible_os_family == "Debian"
+    - docker_installed.rc != 0
+
+- name: Install Docker Engine
+  apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+  become: yes
+  when:
+    - ansible_os_family == "Debian"
+    - docker_installed.rc != 0
+
+- name: Ensure Docker service is started and enabled (apt install)
+  shell: |
+    systemctl start docker || true
+    systemctl enable docker || true
+  become: yes
+  when: not (docker_snap_install | default(false) | bool)
+  changed_when: false
+
+- name: Ensure Docker service is started and enabled (snap install)
+  service:
+    name: snap.docker.dockerd
+    state: started
+    enabled: yes
+  become: yes
+  when: docker_snap_install | default(false) | bool
+
+- name: Add saquadri to docker group
+  shell: usermod -aG docker saquadri
+  become: yes
+  when: not (docker_snap_install | default(false) | bool)
+  changed_when: false
+  failed_when: false
+
+- name: UFW — allow Portainer agent port
+  ufw:
+    rule: allow
+    port: "{{ portainer_agent_port | string }}"
+    proto: tcp
+    comment: "Portainer agent"
+  become: yes
+  ignore_errors: yes

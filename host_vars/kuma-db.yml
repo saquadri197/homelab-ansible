@@ -1,0 +1,8 @@
+# kuma-db (192.168.3.195) - Ubuntu 24.04
+# Running MySQL/MariaDB on 3306 - internal only
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 3306   # MySQL - internal LAN only

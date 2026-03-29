@@ -1,0 +1,7 @@
+# bunter (192.168.3.212) - Ubuntu 24.04
+# SSH only
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443

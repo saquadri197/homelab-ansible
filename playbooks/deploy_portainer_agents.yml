@@ -1,0 +1,38 @@
+---
+# ============================================================
+# playbooks/deploy_portainer_agents.yml
+# Installs Docker (if needed) and deploys the Portainer agent
+# container on all hosts in [docker_hosts].
+#
+# Run this before register_portainer_endpoints.yml.
+#
+# Examples:
+#   # Deploy to all docker_hosts
+#   ansible-playbook playbooks/deploy_portainer_agents.yml
+#
+#   # Deploy to a single new host
+#   ansible-playbook playbooks/deploy_portainer_agents.yml --limit enigma
+#
+#   # Dry run
+#   ansible-playbook playbooks/deploy_portainer_agents.yml --check
+# ============================================================
+
+- name: Deploy Portainer agent to Docker hosts
+  hosts: docker_hosts
+  gather_facts: yes
+  any_errors_fatal: false
+
+  pre_tasks:
+    - name: Install community.docker collection if missing
+      command: ansible-galaxy collection install community.docker
+      delegate_to: localhost
+      run_once: true
+      changed_when: false
+      ignore_errors: yes
+
+  roles:
+    - role: docker
+      tags: [docker]
+
+    - role: portainer_agent
+      tags: [portainer_agent]

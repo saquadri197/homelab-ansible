@@ -1,0 +1,7 @@
+# shellngn01 (192.168.3.155) - Debian 12
+# Containers: shellngn (8080), portainer_agent (9001)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 8080   # ShellNGN web terminal
+  - 9001   # Portainer agent

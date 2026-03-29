@@ -1,0 +1,53 @@
+---
+# ============================================================
+# playbooks/harden_only.yml
+# Applies common + security roles only.
+# Use this for hardening existing hosts or onboarding new ones
+# without touching Docker/Portainer.
+#
+# Examples:
+#   # Dry run across the whole fleet
+#   ansible-playbook playbooks/harden_only.yml --check --diff
+#
+#   # Apply to entire fleet
+#   ansible-playbook playbooks/harden_only.yml
+#
+#   # Single host
+#   ansible-playbook playbooks/harden_only.yml --limit wekan01
+#
+#   # UFW + root SSH only (skip fail2ban and key-only SSH)
+#   ansible-playbook playbooks/harden_only.yml --tags "common,ufw"
+# ============================================================
+
+- name: Harden managed Linux hosts
+  hosts: managed_linux
+  gather_facts: yes
+  serial: 5
+  any_errors_fatal: false
+
+  pre_tasks:
+    - name: Verify SSH connectivity before hardening
+      ping:
+
+    - name: Snapshot reminder
+      debug:
+        msg: >-
+          REMINDER: Take a VM snapshot of {{ inventory_hostname }}
+          before running hardening in production for the first time.
+      when: ansible_check_mode is not defined or not ansible_check_mode
+
+  roles:
+    - role: common
+      tags: [common, baseline]
+
+    - role: security
+      tags: [security, ufw, ssh, fail2ban]
+
+  post_tasks:
+    - name: Confirm SSH port still accessible after hardening
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ ssh_port }}"
+        timeout: 15
+      delegate_to: localhost
+      ignore_errors: yes

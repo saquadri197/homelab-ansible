@@ -1,0 +1,89 @@
+---
+- name: Linux Hardening Phase 3
+  hosts: managed_linux
+  become: true
+  gather_facts: true
+
+  vars:
+    allowed_ssh_user: "saquadri"
+    mgmt_subnet: "192.168.3.0/24"
+
+  tasks:
+
+    # ------------------------
+    # SSH HARDENING
+    # ------------------------
+
+    - name: Restrict SSH to allowed user
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^[#\s]*AllowUsers\s+'
+        line: "AllowUsers {{ allowed_ssh_user }}"
+        create: yes
+        backup: true
+      notify: restart ssh
+
+    # ------------------------
+    # FAIL2BAN CONFIG
+    # ------------------------
+
+    - name: Create fail2ban jail.local
+      copy:
+        dest: /etc/fail2ban/jail.local
+        content: |
+          [sshd]
+          enabled = true
+          port = ssh
+          logpath = %(sshd_log)s
+          maxretry = 5
+          bantime = 1h
+          findtime = 10m
+      notify: restart fail2ban
+
+    - name: Ensure fail2ban is running
+      service:
+        name: fail2ban
+        enabled: true
+        state: started
+
+    # ------------------------
+    # UFW CLEANUP (SAFE VERSION)
+    # ------------------------
+
+    - name: Ensure SSH rule from management subnet exists
+      community.general.ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+        src: "{{ mgmt_subnet }}"
+
+    - name: Remove SSH allow from Anywhere (if exists)
+      community.general.ufw:
+        rule: limit
+        port: "22"
+        proto: tcp
+        delete: true
+      ignore_errors: true
+
+    - name: Remove generic SSH allow (Anywhere)
+      community.general.ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+        delete: true
+      ignore_errors: true
+
+    - name: Reload UFW
+      command: ufw reload
+      changed_when: false
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+
+    - name: restart fail2ban
+      service:
+        name: fail2ban
+        state: restarted

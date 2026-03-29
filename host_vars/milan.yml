@@ -1,0 +1,10 @@
+# milan (192.168.4.212) - Ubuntu 22.04 - Desktop/workstation
+# RDP (3389), Plex (32400), XRDP (3350)
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - 3350   # XRDP session manager
+  - 3389   # RDP
+  - 32400  # Plex Media Server

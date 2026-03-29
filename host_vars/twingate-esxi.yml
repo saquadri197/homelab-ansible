@@ -1,0 +1,6 @@
+# twingate-esxi (192.168.3.190) - Twingate connector
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443

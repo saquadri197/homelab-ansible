@@ -1,0 +1,110 @@
+---
+# ============================================================
+# playbooks/register_portainer_endpoints.yml
+# Registers each host in [docker_hosts] as an endpoint in
+# Portainer via the REST API.
+#
+# Prerequisites:
+#   1. Portainer agent running on all docker_hosts
+#      (run deploy_portainer_agents.yml first)
+#   2. vault_portainer_admin_password set in group_vars/vault.yml
+#      (created by bootstrap.sh)
+#
+# Usage:
+#   ansible-playbook playbooks/register_portainer_endpoints.yml
+#
+#   # Re-run safely — already-registered endpoints are skipped
+# ============================================================
+
+- name: Register docker_hosts as Portainer endpoints
+  hosts: localhost
+  gather_facts: no
+
+  vars_files:
+    - ../group_vars/all.yml
+    - ../group_vars/vault.yml
+
+  vars:
+    portainer_api: "http://{{ portainer_host }}:{{ portainer_port }}/api"
+
+  tasks:
+
+    # ---- Authenticate ----------------------------------------
+
+    - name: Get Portainer JWT token
+      uri:
+        url: "{{ portainer_api }}/auth"
+        method: POST
+        body_format: json
+        body:
+          Username: "{{ portainer_admin_user }}"
+          Password: "{{ portainer_admin_password }}"
+        status_code: 200
+        return_content: yes
+      register: auth_response
+      no_log: true
+
+    - name: Store JWT
+      set_fact:
+        portainer_jwt: "{{ auth_response.json.jwt }}"
+      no_log: true
+
+    # ---- Fetch existing endpoints ----------------------------
+
+    - name: Get existing Portainer endpoints
+      uri:
+        url: "{{ portainer_api }}/endpoints"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ portainer_jwt }}"
+        status_code: 200
+        return_content: yes
+      register: existing_endpoints
+
+    - name: Build set of already-registered names
+      set_fact:
+        registered_names: "{{ existing_endpoints.json | map(attribute='Name') | list }}"
+
+    - name: Show already-registered endpoints
+      debug:
+        msg: "Already in Portainer: {{ registered_names }}"
+
+    # ---- Register new endpoints ------------------------------
+
+    - name: Register endpoint for each docker_host not yet in Portainer
+      uri:
+        url: "{{ portainer_api }}/endpoints"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ portainer_jwt }}"
+        body_format: form-multipart
+        body:
+          Name: "{{ item }}"
+          EndpointCreationType: "2"
+          URL: "tcp://{{ hostvars[item]['ansible_host'] }}:{{ hostvars[item].get('portainer_agent_port', portainer_agent_port) }}"
+          TLS: "true"
+          TLSSkipVerify: "true"
+          TLSSkipClientVerify: "true"
+          GroupID: "1"
+        status_code: [200, 201]
+        return_content: yes
+      loop: "{{ groups['docker_hosts'] }}"
+      when: item not in registered_names
+      register: reg_results
+      ignore_errors: yes
+
+    # ---- Summary report --------------------------------------
+
+    - name: Registration summary
+      debug:
+        msg: >-
+          {% for r in reg_results.results %}
+          {% if r.skipped is defined and r.skipped %}
+          [SKIPPED]    {{ r.item }} — already registered
+          {% elif r.failed is defined and r.failed %}
+          [FAILED]     {{ r.item }} — {{ r.msg | default('check Portainer logs') }}
+          {% else %}
+          [REGISTERED] {{ r.item }} (Portainer ID: {{ r.json.Id | default('?') }})
+          {% endif %}
+          {% endfor %}
+      when: reg_results is defined

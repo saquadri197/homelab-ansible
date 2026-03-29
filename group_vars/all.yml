@@ -1,0 +1,44 @@
+---
+# ============================================================
+# group_vars/all.yml
+# Non-secret variables shared across all managed hosts.
+# Secrets live in group_vars/vault.yml (Ansible Vault encrypted).
+# ============================================================
+
+# --- SSH hardening ---
+ssh_port: 22
+ssh_permit_root_login: "no"
+ssh_password_authentication: "no"       # keys are deployed on all hosts
+ssh_pubkey_authentication: "yes"
+ssh_max_auth_tries: 3
+ssh_client_alive_interval: 300
+ssh_client_alive_count_max: 2
+
+# --- UFW ---
+ufw_allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+
+# Add per-host overrides in host_vars/<hostname>.yml
+
+# --- fail2ban ---
+fail2ban_ssh_maxretry: 5
+fail2ban_ssh_findtime: 600    # 10 minutes
+fail2ban_ssh_bantime: 3600    # 1 hour; set -1 for permanent bans
+
+# --- Portainer ---
+portainer_host: "192.168.3.128"
+portainer_port: 9000
+portainer_url: "http://{{ portainer_host }}:{{ portainer_port }}"
+portainer_agent_port: 9001
+portainer_admin_user: "admin"
+# Password comes from vault:
+portainer_admin_password: "{{ vault_portainer_admin_password }}"
+
+# --- UFW default policy ---
+# SAFETY: Set to false by default. UFW rules are only ADDED,
+# never reset. Only set to true on a host after reviewing the
+# audit report and confirming all needed ports are in
+# ufw_allowed_tcp_ports (or host_vars overrides).
+ufw_set_default_policy: false

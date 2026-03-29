@@ -1,0 +1,7 @@
+# wekan01 (192.168.3.121) - Debian 12
+# Containers: wekan (127.0.0.1:8080), cloudflared-wekan, wekan-mongo
+# Port 80 is the public-facing wekan proxy, 8080 is localhost-only
+ufw_set_default_policy: true
+ufw_allowed_tcp_ports:
+  - 22
+  - 80    # Wekan HTTP (reverse proxy)
