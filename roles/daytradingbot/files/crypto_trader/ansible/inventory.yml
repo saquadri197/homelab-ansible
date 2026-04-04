@@ -1,0 +1,23 @@
+# ansible/inventory.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# Managed from: ansible01.syedaq.local (192.168.3.129)
+#
+# USAGE:
+#   ansible-playbook -i ansible/inventory.yml ansible/playbook.yml
+#   ansible-playbook -i ansible/inventory.yml ansible/playbook.yml --limit bandit
+# ──────────────────────────────────────────────────────────────────────────────
+
+all:
+  children:
+    crypto_traders:
+      hosts:
+        bandit:
+          ansible_host: 192.168.3.131
+          ansible_user: YOUR_SSH_USER                    # ← fill in your SSH user on bandit
+          ansible_ssh_private_key_file: ~/.ssh/id_rsa    # ← key from ansible01
+          # ansible_password: YOUR_PASSWORD              # ← uncomment if using password auth
+
+          # Host-specific overrides
+          trader_install_dir: /opt/crypto_trader
+          trader_user: trader
+          trader_port: 5000

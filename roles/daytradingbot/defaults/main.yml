@@ -1,0 +1,41 @@
+---
+# ============================================================
+# roles/daytradingbot/defaults/main.yml
+# Default variables for the Kraken Day Trading Bot role.
+# Override per-host in host_vars/bandit.yml.
+# Secrets MUST come from Ansible Vault (group_vars/vault.yml).
+# ============================================================
+
+# ---- Service account ---------------------------------------
+daytradingbot_user:  daytradingbot
+daytradingbot_group: daytradingbot
+
+# ---- Paths -------------------------------------------------
+daytradingbot_home:      /opt/daytradingbot
+daytradingbot_venv:      /opt/daytradingbot/venv
+daytradingbot_log_dir:   /var/log/daytradingbot
+daytradingbot_trade_log: /opt/daytradingbot/trades.csv
+
+# ---- Network -----------------------------------------------
+daytradingbot_port: 5000
+
+# CF edge node IPs — UFW source restriction for port 5000.
+# cloudflared runs on these hosts and connects to bandit:5000 over LAN.
+# All other inbound to port 5000 is blocked.
+cf_edge_ips:
+  - 192.168.3.122   # cf-edge-pve01
+  - 192.168.3.123   # cf-edge-esx01
+
+# ---- Runtime settings (non-secret defaults) ----------------
+daytradingbot_dry_run:                   "true"     # KEEP true until paper trading complete
+daytradingbot_kraken_testnet:            "true"     # Switch to "false" for live trading
+daytradingbot_min_confluence_score:      "60"
+daytradingbot_risk_per_trade_pct:        "1.0"
+daytradingbot_max_open_positions:        "3"
+daytradingbot_stop_loss_buffer_pct:      "0.015"
+daytradingbot_trailing_stop_pct:         "0.03"
+daytradingbot_scan_interval_minutes:     "15"
+daytradingbot_min_consolidation_candles: "8"
+
+# ---- Symbols to watch --------------------------------------
+daytradingbot_symbols: "ADA/USDT:USDT,ALGO/USDT:USDT,VET/USDT:USDT,XRP/USDT:USDT,BTC/USDT:USDT"

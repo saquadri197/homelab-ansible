@@ -1,0 +1,169 @@
+---
+# ============================================================
+# roles/daytradingbot/tasks/main.yml
+# Deploys the Kraken Day Trading Bot on bandit (192.168.3.131).
+#
+# Idempotent — safe to re-run at any time.
+#
+# What this role does:
+#   1. Creates a locked-down 'daytradingbot' service user
+#   2. Sets up /opt/daytradingbot with Python venv
+#   3. Deploys source package + .env (secrets from Vault)
+#   4. Installs gunicorn, uvicorn, and all dependencies
+#   5. Configures systemd service (auto-start, auto-restart)
+#
+# NOTE: No UFW changes are needed for external access.
+# The webhook server listens on 127.0.0.1 only — Cloudflare Tunnel
+# connects internally. bandit already has port 5000 open for LAN access.
+# ============================================================
+
+# ---- Service user ------------------------------------------
+
+- name: Create daytradingbot group
+  group:
+    name: "{{ daytradingbot_group }}"
+    system: yes
+    state: present
+  become: yes
+
+- name: Create daytradingbot system user (no login shell)
+  user:
+    name: "{{ daytradingbot_user }}"
+    group: "{{ daytradingbot_group }}"
+    system: yes
+    shell: /usr/sbin/nologin
+    home: "{{ daytradingbot_home }}"
+    create_home: no
+    comment: "Kraken Day Trading Bot service account"
+  become: yes
+
+# ---- Directories -------------------------------------------
+
+- name: Create app directory
+  file:
+    path: "{{ daytradingbot_home }}"
+    state: directory
+    owner: "{{ daytradingbot_user }}"
+    group: "{{ daytradingbot_group }}"
+    mode: "0750"
+  become: yes
+
+- name: Create log directory
+  file:
+    path: "{{ daytradingbot_log_dir }}"
+    state: directory
+    owner: "{{ daytradingbot_user }}"
+    group: "{{ daytradingbot_group }}"
+    mode: "0750"
+  become: yes
+
+# ---- Python + venv -----------------------------------------
+
+- name: Install python3-venv and python3-dev
+  apt:
+    name:
+      - python3-venv
+      - python3-dev
+      - build-essential
+    state: present
+    update_cache: no
+  become: yes
+  when: ansible_os_family == "Debian"
+
+- name: Create Python virtualenv
+  command: python3 -m venv "{{ daytradingbot_venv }}"
+  args:
+    creates: "{{ daytradingbot_venv }}/bin/activate"
+  become: yes
+
+- name: Set ownership of virtualenv
+  file:
+    path: "{{ daytradingbot_venv }}"
+    state: directory
+    owner: "{{ daytradingbot_user }}"
+    group: "{{ daytradingbot_group }}"
+    recurse: yes
+  become: yes
+
+# ---- Bot source files --------------------------------------
+
+- name: Copy bot source package
+  copy:
+    src: "crypto_trader/"
+    dest: "{{ daytradingbot_home }}/"
+    owner: "{{ daytradingbot_user }}"
+    group: "{{ daytradingbot_group }}"
+    mode: "0640"
+  become: yes
+  notify: Restart daytradingbot
+
+- name: Ensure Python package directories are executable
+  file:
+    path: "{{ daytradingbot_home }}/{{ item }}"
+    state: directory
+    owner: "{{ daytradingbot_user }}"
+    group: "{{ daytradingbot_group }}"
+    mode: "0750"
+  loop:
+    - data
+    - analysis
+    - trading
+    - alerts
+    - webhook
+  become: yes
+
+- name: Install Python dependencies into venv
+  pip:
+    requirements: "{{ daytradingbot_home }}/requirements.txt"
+    virtualenv: "{{ daytradingbot_venv }}"
+    state: present
+  become: yes
+
+# ---- Secrets / .env ----------------------------------------
+
+- name: Deploy .env from Ansible Vault
+  template:
+    src: daytradingbot.env.j2
+    dest: "{{ daytradingbot_home }}/.env"
+    owner: "{{ daytradingbot_user }}"
+    group: "{{ daytradingbot_group }}"
+    mode: "0600"
+  become: yes
+  no_log: true
+  notify: Restart daytradingbot
+
+# ---- Systemd service ---------------------------------------
+
+- name: Deploy systemd service unit
+  template:
+    src: daytradingbot.service.j2
+    dest: /etc/systemd/system/daytradingbot.service
+    owner: root
+    group: root
+    mode: "0644"
+  become: yes
+  notify:
+    - Reload systemd
+    - Restart daytradingbot
+
+- name: Enable and start daytradingbot service
+  systemd:
+    name: daytradingbot
+    enabled: yes
+    state: started
+    daemon_reload: yes
+  become: yes
+  tags: [daytradingbot_service]
+
+# ---- UFW: restrict port 5000 to CF edge IPs only -----------
+
+- name: "UFW — allow port {{ daytradingbot_port }} from CF edge nodes only"
+  ufw:
+    rule: allow
+    port: "{{ daytradingbot_port | string }}"
+    proto: tcp
+    src: "{{ item }}"
+    comment: "daytradingbot — CF edge {{ item }}"
+  loop: "{{ cf_edge_ips }}"
+  become: yes
+  notify: Reload UFW

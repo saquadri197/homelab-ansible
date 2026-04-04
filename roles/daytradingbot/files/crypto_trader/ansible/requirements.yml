@@ -1,0 +1,8 @@
+# ansible/requirements.yml
+# Install with: ansible-galaxy collection install -r ansible/requirements.yml
+
+collections:
+  - name: ansible.posix        # Provides synchronize (rsync) module
+    version: ">=1.5.0"
+  - name: community.general    # Useful extras (not strictly required)
+    version: ">=8.0.0"

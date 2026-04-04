@@ -1,0 +1,50 @@
+# ═══════════════════════════════════════════════════════════════
+#  Crypto Trading Bot — Configuration
+#  Edit this file with your API keys and preferences.
+#  NEVER share this file — it contains your API credentials.
+# ═══════════════════════════════════════════════════════════════
+
+# ── Exchange ─────────────────────────────────────────────────────
+exchange:
+  name: krakenfutures         # CRITICAL FIX: 'krakenfutures' supports the sandbox/demo
+  api_key:    "fY9aGilrEdCK/X1KY7SyjEUGE6sLrU10RblzyvrqX186Ou+M8jW61g5b"
+  api_secret: "kPZdVLeqpySkYfhQBTmJnA7SxqUIEwf6FHGGfwc+NBr3ZBzusxen+D6rmO4KGFL6oHmBzygEAhStErc5vJeoy7LL"
+  testnet: true               # Points to demo-futures.kraken.com
+
+# ── Symbols to Watch ─────────────────────────────────────────────
+# Kraken Futures format: "BASE/QUOTE:SETTLEMENT"
+symbols:
+  - "ADA/USDT:USDT"
+  - "ALGO/USDT:USDT"
+  - "VET/USDT:USDT"
+  - "XRP/USDT:USDT"
+  - "BTC/USDT:USDT"
+
+# ── Strategy Parameters ───────────────────────────────────────────
+min_confluence_score: 60
+scan_interval_minutes: 15
+min_consolidation_candles: 8
+
+# ── Risk Management ───────────────────────────────────────────────
+risk_per_trade_pct: 1.0
+max_open_positions: 3
+stop_loss_buffer_pct: 0.015
+trailing_stop_pct: 0.03
+
+# ── Telegram Alerts ───────────────────────────────────────────────
+alerts:
+  telegram:
+    enabled: true
+    bot_token: "8705657903:AAF5UzjASoys6ll1rispn1isCNpO9xbTaUU"
+    chat_id:   "6581870903"
+
+# ── Webhook Server (TradingView → ESXi VM → Kraken) ──────────────────────────
+webhook:
+  secret: "377dee928a4af4e01d769c0174e3c12800252261df2315ef1d0fa5343784f98e"
+  restrict_to_tradingview_ips: false
+
+# ── Dry Run Mode ──────────────────────────────────────────────────────────────
+dry_run: true    # Set to false only when you're ready to place demo orders
+
+# ── Logging ───────────────────────────────────────────────────────
+log_level: INFO

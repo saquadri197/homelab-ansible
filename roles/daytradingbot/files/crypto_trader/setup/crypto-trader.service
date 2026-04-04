@@ -1,0 +1,64 @@
+# /etc/systemd/system/crypto-trader.service
+#
+# Systemd service unit for the Crypto Trader webhook server.
+# This keeps the server running 24/7 and restarts it automatically
+# if it crashes or if the VM reboots.
+#
+# INSTALL:
+#   sudo cp setup/crypto-trader.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable crypto-trader
+#   sudo systemctl start  crypto-trader
+#
+# COMMANDS:
+#   sudo systemctl status  crypto-trader   # Check status
+#   sudo systemctl restart crypto-trader   # Restart after config changes
+#   sudo journalctl -u crypto-trader -f    # Follow live logs
+
+[Unit]
+Description=Crypto Trader Webhook Server (Kraken Futures)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# ── Replace with your actual user and install path ────────────────────────────
+User=trader
+Group=trader
+WorkingDirectory=/opt/crypto_trader
+
+# ── Start the FastAPI server via uvicorn ──────────────────────────────────────
+# --workers 1   : single worker (avoids duplicated trades from multiple processes)
+# --host 0.0.0.0: listen on all interfaces (nginx proxies from outside)
+# --port 8000   : internal port (nginx handles 443 → 8000)
+ExecStart=/opt/crypto_trader/venv/bin/uvicorn webhook.server:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 1 \
+    --log-level info \
+    --access-log
+# NOTE: Listening on 127.0.0.1 (localhost only) — NOT 0.0.0.0
+# Cloudflare Tunnel (cloudflared) connects to localhost:8000 internally.
+# No ports are exposed to the network. If not using cloudflared,
+# change host to 0.0.0.0 and use nginx as a reverse proxy.
+
+# ── Restart policy ────────────────────────────────────────────────────────────
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# ── Output logs to journald ───────────────────────────────────────────────────
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=crypto-trader
+
+# ── Environment ───────────────────────────────────────────────────────────────
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/opt/crypto_trader
+
+# ── Security hardening (optional but recommended) ─────────────────────────────
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,79 @@
+---
+# ============================================================
+# playbooks/deploy_daytradingbot.yml
+# Deploys the Kraken Day Trading Bot to bandit (192.168.3.131)
+#
+# Prerequisites:
+#   - Vault secrets added to group_vars/vault.yml
+#     (see VAULT_SECRETS_SETUP_daytradingbot.md for instructions)
+#   - bandit is in inventory and reachable via SSH
+#   - roles/daytradingbot/files/crypto_trader/ is populated
+#     (copy the crypto_trader/ source directory there)
+#
+# Usage:
+#   # Dry run (no changes)
+#   ansible-playbook playbooks/deploy_daytradingbot.yml --check --diff
+#
+#   # Full deploy
+#   ansible-playbook playbooks/deploy_daytradingbot.yml
+#
+#   # Restart service only (after manual config change)
+#   ansible-playbook playbooks/deploy_daytradingbot.yml --tags daytradingbot_service
+#
+#   # After deploy, health check:
+#   curl http://192.168.3.131:5000/health
+#   curl https://bandit.syedaq.com/health
+# ============================================================
+
+- name: Deploy Kraken Day Trading Bot to bandit
+  hosts: bandit
+  gather_facts: yes
+  any_errors_fatal: true
+
+  vars_files:
+    - ../group_vars/vault.yml
+
+  pre_tasks:
+    - name: Verify SSH connectivity before deploy
+      ping:
+
+    - name: Show deployment target and mode
+      debug:
+        msg: >-
+          Deploying Kraken Day Trading Bot to {{ inventory_hostname }}
+          ({{ ansible_host }}) —
+          Dry run: {{ daytradingbot_dry_run | default('true') }} |
+          Testnet: {{ daytradingbot_kraken_testnet | default('true') }} |
+          Min confluence: {{ daytradingbot_min_confluence_score | default('60') }} |
+          Risk per trade: {{ daytradingbot_risk_per_trade_pct | default('1.0') }}%
+
+  roles:
+    - role: daytradingbot
+      tags: [daytradingbot]
+
+  post_tasks:
+    - name: Wait for daytradingbot port to be reachable
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: "{{ daytradingbot_port | default(5000) }}"
+        timeout: 30
+      delegate_to: localhost
+
+    - name: Health check — confirm bot is responding
+      uri:
+        url: "http://{{ ansible_host }}:{{ daytradingbot_port | default(5000) }}/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+      delegate_to: localhost
+      register: health_check
+      retries: 3
+      delay: 5
+      until: health_check.status == 200
+
+    - name: Health check passed
+      debug:
+        msg: >-
+          Day Trading Bot is live at
+          http://{{ ansible_host }}:{{ daytradingbot_port | default(5000) }}/health
+          and https://bandit.syedaq.com/health (via Cloudflare Tunnel)

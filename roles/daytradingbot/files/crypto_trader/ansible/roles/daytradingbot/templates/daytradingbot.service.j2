@@ -1,0 +1,45 @@
+[Unit]
+Description=Kraken Day Trading Bot — AJ Confluence Strategy
+After=network-online.target cloudflared.service
+Wants=network-online.target
+# Start after cloudflared so the tunnel is up before accepting webhook signals
+
+[Service]
+Type=simple
+User={{ daytradingbot_user }}
+Group={{ daytradingbot_group }}
+WorkingDirectory={{ daytradingbot_home }}
+EnvironmentFile={{ daytradingbot_home }}/.env
+
+# gunicorn with uvicorn worker class for ASGI (FastAPI) support
+# Binds to 127.0.0.1 only — Cloudflare Tunnel connects internally
+ExecStart={{ daytradingbot_venv }}/bin/gunicorn \
+    --bind 127.0.0.1:{{ daytradingbot_port }} \
+    --workers 1 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --timeout 120 \
+    --log-file {{ daytradingbot_log_dir }}/gunicorn.log \
+    --access-logfile {{ daytradingbot_log_dir }}/access.log \
+    --error-logfile {{ daytradingbot_log_dir }}/error.log \
+    webhook.server:app
+
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=daytradingbot
+
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH={{ daytradingbot_home }}
+
+# Systemd security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths={{ daytradingbot_home }} {{ daytradingbot_log_dir }}
+
+[Install]
+WantedBy=multi-user.target

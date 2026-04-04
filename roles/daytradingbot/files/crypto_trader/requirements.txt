@@ -1,0 +1,24 @@
+# Core trading library — handles Kraken, Bybit, Binance, and 100+ other exchanges
+ccxt>=4.3.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Config parsing
+PyYAML>=6.0
+
+# HTTP requests (for Telegram alerts)
+requests>=2.31.0
+
+# Webhook server (TradingView → server → Kraken)
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.0.0
+
+# Production ASGI/WSGI server (gunicorn manages uvicorn workers)
+# Run with: gunicorn -k uvicorn.workers.UvicornWorker -w 1 -b 127.0.0.1:5000 webhook.server:app
+gunicorn>=21.2.0
+
+# Load API keys and config from the .env file
+python-dotenv>=1.0.0

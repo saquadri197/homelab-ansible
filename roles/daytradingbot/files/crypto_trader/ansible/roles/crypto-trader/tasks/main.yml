@@ -1,0 +1,212 @@
+# ansible/roles/crypto-trader/tasks/main.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# Deployment tasks — tested on Debian 12 (Bookworm)
+#
+# Tags:
+#   system  — apt packages, user creation
+#   deploy  — copy code, install Python deps, write config
+#   service — systemd unit
+#   tunnel  — cloudflared config update
+#   restart — restart the service only
+# ──────────────────────────────────────────────────────────────────────────────
+
+---
+
+# ── DEBIAN 12: ensure apt cache is fresh ─────────────────────────────────────
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache:      true
+    cache_valid_time:  3600
+  tags: [system]
+
+# ── SYSTEM PACKAGES ───────────────────────────────────────────────────────────
+# Debian 12 (Bookworm) ships Python 3.11 natively — no PPA needed.
+- name: Install system packages
+  ansible.builtin.apt:
+    name:
+      - python3.11
+      - python3.11-venv
+      - python3.11-dev
+      - python3-pip
+      - git
+      - curl
+      - rsync
+      - build-essential
+      - sudo            # Ensure sudo is present on Debian
+    state: present
+  tags: [system]
+
+# ── DEDICATED USER ────────────────────────────────────────────────────────────
+- name: Create trader group
+  ansible.builtin.group:
+    name:  "{{ trader_group }}"
+    state: present
+    system: true
+  tags: [system]
+
+- name: Create trader system user
+  ansible.builtin.user:
+    name:       "{{ trader_user }}"
+    group:      "{{ trader_group }}"
+    system:     true
+    shell:      /bin/bash
+    home:       "{{ trader_install_dir }}"
+    createhome: false   # We create the dir explicitly below
+    state:      present
+  tags: [system]
+
+# ── PROJECT DIRECTORY ─────────────────────────────────────────────────────────
+- name: Create install directory
+  ansible.builtin.file:
+    path:  "{{ trader_install_dir }}"
+    state: directory
+    owner: "{{ trader_user }}"
+    group: "{{ trader_group }}"
+    mode:  "0755"
+  tags: [deploy]
+
+# ── SYNC PROJECT FILES ────────────────────────────────────────────────────────
+# ansible.posix.synchronize uses rsync under the hood.
+# Requires: ansible-galaxy collection install ansible.posix
+- name: Sync project files to server
+  ansible.posix.synchronize:
+    src:  "{{ playbook_dir }}/../"
+    dest: "{{ trader_install_dir }}/"
+    rsync_opts:
+      - "--exclude=.git"
+      - "--exclude=__pycache__"
+      - "--exclude=*.pyc"
+      - "--exclude=venv"
+      - "--exclude=node_modules"
+      - "--exclude=*.log"
+      - "--exclude=ansible"
+      - "--exclude=.npm"
+    delete: true
+  notify: restart crypto-trader
+  tags: [deploy]
+
+- name: Fix ownership on install directory
+  ansible.builtin.file:
+    path:    "{{ trader_install_dir }}"
+    owner:   "{{ trader_user }}"
+    group:   "{{ trader_group }}"
+    recurse: true
+  tags: [deploy]
+
+# ── PYTHON VIRTUAL ENVIRONMENT ────────────────────────────────────────────────
+- name: Create Python virtual environment
+  ansible.builtin.command:
+    cmd:     python3.11 -m venv {{ trader_install_dir }}/venv
+    creates: "{{ trader_install_dir }}/venv/bin/activate"
+  become:      true
+  become_user: "{{ trader_user }}"
+  tags: [deploy]
+
+- name: Upgrade pip inside venv
+  ansible.builtin.pip:
+    name:       pip
+    state:      latest
+    virtualenv: "{{ trader_install_dir }}/venv"
+    executable: "{{ trader_install_dir }}/venv/bin/pip"
+  become:      true
+  become_user: "{{ trader_user }}"
+  tags: [deploy]
+
+- name: Install Python dependencies
+  ansible.builtin.pip:
+    requirements: "{{ trader_install_dir }}/requirements.txt"
+    virtualenv:   "{{ trader_install_dir }}/venv"
+    executable:   "{{ trader_install_dir }}/venv/bin/pip"
+    state:        present
+  become:      true
+  become_user: "{{ trader_user }}"
+  notify: restart crypto-trader
+  tags: [deploy]
+
+# ── CONFIG FILE ───────────────────────────────────────────────────────────────
+- name: Deploy config.yaml from vault-encrypted template
+  ansible.builtin.template:
+    src:   config.yaml.j2
+    dest:  "{{ trader_install_dir }}/config.yaml"
+    owner: "{{ trader_user }}"
+    group: "{{ trader_group }}"
+    mode:  "0600"
+  notify: restart crypto-trader
+  tags: [deploy]
+
+# ── SYSTEMD SERVICE ───────────────────────────────────────────────────────────
+- name: Deploy systemd service unit
+  ansible.builtin.template:
+    src:   crypto-trader.service.j2
+    dest:  /etc/systemd/system/crypto-trader.service
+    owner: root
+    group: root
+    mode:  "0644"
+  notify:
+    - reload systemd
+    - restart crypto-trader
+  tags: [service]
+
+- name: Enable and start crypto-trader service
+  ansible.builtin.systemd:
+    name:          crypto-trader
+    enabled:       true
+    state:         started
+    daemon_reload: true
+  tags: [service]
+
+# ── CLOUDFLARE TUNNEL ─────────────────────────────────────────────────────────
+- name: Check if cloudflared config exists
+  ansible.builtin.stat:
+    path: "{{ cloudflared_config_path }}"
+  register: cf_config
+  tags: [tunnel]
+
+- name: Add crypto-trader route to cloudflared tunnel config
+  ansible.builtin.blockinfile:
+    path:   "{{ cloudflared_config_path }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK — crypto-trader"
+    insertbefore: ".*http_status:404.*"   # Insert before the catch-all rule
+    block: |
+      - hostname: {{ cloudflared_tunnel_hostname }}
+        service: http://localhost:{{ trader_port }}
+        originRequest:
+          connectTimeout: 30s
+          noTLSVerify: true
+  when: cf_config.stat.exists
+  notify: restart cloudflared
+  tags: [tunnel]
+
+- name: Warn if cloudflared config not found at expected path
+  ansible.builtin.debug:
+    msg: >
+      cloudflared config not found at {{ cloudflared_config_path }}.
+      Manually add the tunnel route — see cloudflared/tunnel-config.yml for the snippet.
+  when: not cf_config.stat.exists
+  tags: [tunnel]
+
+# ── VERIFY DEPLOYMENT ─────────────────────────────────────────────────────────
+- name: Wait for webhook server to be healthy
+  ansible.builtin.uri:
+    url:         "http://localhost:{{ trader_port }}/health"
+    status_code: 200
+    timeout:     10
+  register: health_check
+  retries:  12
+  delay:    5
+  until:    health_check.status == 200
+  tags: [deploy, service]
+
+- name: Print deployment summary
+  ansible.builtin.debug:
+    msg:
+      - "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      - " Crypto Trader deployed successfully on {{ inventory_hostname }}"
+      - " Host:       {{ ansible_host }}"
+      - " Install:    {{ trader_install_dir }}"
+      - " Service:    systemctl status crypto-trader"
+      - " Logs:       journalctl -u crypto-trader -f"
+      - " Local URL:  http://localhost:{{ trader_port }}/health"
+      - " Tunnel URL: https://{{ cloudflared_tunnel_hostname }}/health"
+      - "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  tags: [deploy, service]

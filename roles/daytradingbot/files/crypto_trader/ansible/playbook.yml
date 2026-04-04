@@ -1,0 +1,52 @@
+# ansible/playbook.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# Main deployment playbook for the Crypto Trader webhook server.
+#
+# Runs the full deployment in order:
+#   1. System packages & Python environment
+#   2. Project files & config
+#   3. systemd service
+#   4. cloudflared tunnel route
+#
+# FIRST RUN (full deploy):
+#   ansible-playbook -i ansible/inventory.yml ansible/playbook.yml
+#
+# CODE UPDATE ONLY (skip system setup):
+#   ansible-playbook -i ansible/inventory.yml ansible/playbook.yml --tags deploy
+#
+# RESTART SERVICE ONLY:
+#   ansible-playbook -i ansible/inventory.yml ansible/playbook.yml --tags restart
+# ──────────────────────────────────────────────────────────────────────────────
+
+---
+- name: Deploy Crypto Trader Webhook Server
+  hosts: crypto_traders
+  become: true          # sudo
+  gather_facts: true
+
+  vars_files:
+    - vars/secrets.yml  # ansible-vault encrypted — see README below
+
+  roles:
+    - role: crypto-trader
+
+# ──────────────────────────────────────────────────────────────────────────────
+# SECRETS FILE (vars/secrets.yml)
+# Create and encrypt with:
+#   ansible-vault create ansible/vars/secrets.yml
+#
+# Contents of secrets.yml:
+#   kraken_api_key:      "your_kraken_api_key"
+#   kraken_api_secret:   "your_kraken_api_secret"
+#   telegram_bot_token:  "your_telegram_bot_token"
+#   telegram_chat_id:    "your_chat_id"
+#   webhook_secret:      "your_webhook_secret_hex"
+#
+# To run with vault:
+#   ansible-playbook -i ansible/inventory.yml ansible/playbook.yml --ask-vault-pass
+#
+# Or store vault password in a file:
+#   echo "your_vault_password" > ~/.vault_pass && chmod 600 ~/.vault_pass
+#   ansible-playbook -i ansible/inventory.yml ansible/playbook.yml \
+#     --vault-password-file ~/.vault_pass
+# ──────────────────────────────────────────────────────────────────────────────

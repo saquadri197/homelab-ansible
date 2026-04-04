@@ -1,0 +1,33 @@
+# ansible/roles/crypto-trader/vars/main.yml
+# ──────────────────────────────────────────────────────────────────────────────
+# Role default variables. Override these in inventory.yml per-host
+# or in playbook.yml vars section.
+# ──────────────────────────────────────────────────────────────────────────────
+
+trader_install_dir:  /opt/crypto_trader
+trader_user:         trader
+trader_group:        trader
+trader_port:         5000
+python_version:      python3.11
+
+# Cloudflare tunnel
+cloudflared_tunnel_hostname: bandit.syedaq.com
+cloudflared_config_path:     /etc/cloudflared/config.yml
+
+# Strategy settings (injected into config.yaml via template)
+min_confluence_score:     60
+scan_interval_minutes:    15
+risk_per_trade_pct:       1.0
+max_open_positions:       3
+stop_loss_buffer_pct:     0.015
+trailing_stop_pct:        0.03
+dry_run:                  true    # Flip to false for live trading
+
+# Symbols to watch
+trader_symbols:
+  - "ADA/USDT:USDT"
+  - "ALGO/USDT:USDT"
+  - "VET/USDT:USDT"
+  - "PEPE/USDT:USDT"
+  - "XRP/USDT:USDT"
+  - "BTC/USDT:USDT"

@@ -1,0 +1,249 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// AJ-Style Confluence Trading Strategy
+// For use with the Crypto Trader webhook bot (Kraken Futures)
+//
+// SETUP INSTRUCTIONS:
+//   1. Open TradingView → New Chart → choose your symbol (e.g. ADAUSDT)
+//   2. Open Pine Script editor → paste this entire script → Save → Add to chart
+//   3. The script plots confluence signals directly on your chart
+//   4. Create THREE alerts using the instructions at the bottom of this file
+//
+// WHAT THIS DETECTS:
+//   ✓ Support/Resistance level touch (price approaching a key zone)
+//   ✓ RSI bullish/bearish divergence
+//   ✓ MACD crossover
+//   ✓ Money Flow Index (oversold/overbought)
+//   ✓ Price crossing the 50 EMA
+//   ✓ Fibonacci retracement zones (61.8% and 78.6%)
+//   ✓ Consolidation range breakout with confirmation
+// ═══════════════════════════════════════════════════════════════════════════
+
+//@version=5
+strategy(
+    title       = "AJ Confluence Strategy",
+    overlay     = true,
+    default_qty_type  = strategy.percent_of_equity,
+    default_qty_value = 10,
+    commission_type   = strategy.commission.percent,
+    commission_value  = 0.06,
+    slippage    = 2
+)
+
+// ── INPUTS ────────────────────────────────────────────────────────────────────
+g_risk  = "Risk Management"
+g_sig   = "Signal Settings"
+g_alert = "Webhook"
+
+webhook_secret = input.string("YOUR_SECRET_HERE", "Webhook Secret",        group=g_alert,
+    tooltip="Must match webhook.secret in config.yaml")
+webhook_url    = input.string("https://YOUR_SERVER_IP/webhook", "Server URL", group=g_alert)
+
+rsi_period     = input.int(14,    "RSI Period",          group=g_sig, minval=2)
+mfi_period     = input.int(14,    "MFI Period",          group=g_sig, minval=2)
+ema_period     = input.int(50,    "EMA Period",          group=g_sig, minval=5)
+sr_lookback    = input.int(50,    "S/R Lookback (bars)", group=g_sig, minval=20)
+sr_tolerance   = input.float(2.0, "S/R Tolerance %",    group=g_sig, minval=0.5, step=0.5)
+min_score      = input.int(60,    "Min Confluence Score",group=g_sig, minval=30, maxval=100)
+fib_lookback   = input.int(100,   "Fibonacci Lookback",  group=g_sig, minval=50)
+
+// ── CORE INDICATORS ───────────────────────────────────────────────────────────
+
+// RSI
+rsi = ta.rsi(close, rsi_period)
+
+// MACD
+[macd_line, signal_line, hist] = ta.macd(close, 12, 26, 9)
+
+// 50 EMA
+ema50 = ta.ema(close, ema_period)
+plot(ema50, "50 EMA", color=color.new(color.orange, 0), linewidth=2)
+
+// Money Flow Index
+mfi = ta.mfi(hlc3, mfi_period)
+
+// ── SUPPORT & RESISTANCE ──────────────────────────────────────────────────────
+// Detect swing highs and lows over the lookback window
+swing_high = ta.pivothigh(high, sr_lookback / 2, sr_lookback / 2)
+swing_low  = ta.pivotlow (low,  sr_lookback / 2, sr_lookback / 2)
+
+// Track the most recent significant S/R levels
+var float sr_level_1 = na
+var float sr_level_2 = na
+var float sr_level_3 = na
+
+if not na(swing_high)
+    sr_level_3 := sr_level_2
+    sr_level_2 := sr_level_1
+    sr_level_1 := swing_high
+
+if not na(swing_low)
+    sr_level_3 := sr_level_2
+    sr_level_2 := sr_level_1
+    sr_level_1 := swing_low
+
+// Draw S/R lines
+hline_1 = not na(sr_level_1) ? sr_level_1 : close
+hline_2 = not na(sr_level_2) ? sr_level_2 : close
+
+// Check if price is near any S/R level
+near_sr(level) =>
+    not na(level) and math.abs(close - level) / level * 100 < sr_tolerance
+
+at_support    = near_sr(sr_level_1) and close < ema50
+at_resistance = near_sr(sr_level_1) and close > ema50
+
+plotshape(at_support,    title="At Support",    style=shape.triangleup,
+    location=location.belowbar, color=color.new(color.green, 0), size=size.small)
+plotshape(at_resistance, title="At Resistance", style=shape.triangledown,
+    location=location.abovebar, color=color.new(color.red, 0),   size=size.small)
+
+// ── RSI DIVERGENCE ────────────────────────────────────────────────────────────
+// Bullish: price makes lower low, RSI makes higher low
+rsi_low_1  = ta.lowest(rsi,   14)[1]
+rsi_low_2  = ta.lowest(rsi,   14)[8]
+price_low_1 = ta.lowest(low,  14)[1]
+price_low_2 = ta.lowest(low,  14)[8]
+
+bullish_div = price_low_1 < price_low_2 and rsi_low_1 > rsi_low_2
+
+// Bearish: price makes higher high, RSI makes lower high
+rsi_high_1   = ta.highest(rsi,  14)[1]
+rsi_high_2   = ta.highest(rsi,  14)[8]
+price_high_1 = ta.highest(high, 14)[1]
+price_high_2 = ta.highest(high, 14)[8]
+
+bearish_div = price_high_1 > price_high_2 and rsi_high_1 < rsi_high_2
+
+// ── MACD SIGNALS ─────────────────────────────────────────────────────────────
+macd_bull_cross = ta.crossover (hist, 0)
+macd_bear_cross = ta.crossunder(hist, 0)
+
+// ── MONEY FLOW ────────────────────────────────────────────────────────────────
+mfi_oversold   = mfi < 25
+mfi_overbought = mfi > 75
+mfi_turning_green = mfi[1] < 40 and mfi > mfi[1]
+
+// ── EMA SIGNALS ───────────────────────────────────────────────────────────────
+price_crossed_ema_up   = ta.crossover (close, ema50)
+price_crossed_ema_down = ta.crossunder(close, ema50)
+price_above_ema = close > ema50
+price_below_ema = close < ema50
+
+// ── FIBONACCI ZONES ───────────────────────────────────────────────────────────
+fib_high = ta.highest(high, fib_lookback)
+fib_low  = ta.lowest (low,  fib_lookback)
+fib_range = fib_high - fib_low
+
+fib_618 = fib_high - 0.618 * fib_range
+fib_786 = fib_high - 0.786 * fib_range
+
+in_fib_618_zone = close <= fib_618
+in_fib_786_zone = close <= fib_786
+
+plot(fib_618, "Fib 61.8%", color=color.new(color.blue,   60), linewidth=1, style=plot.style_linebr)
+plot(fib_786, "Fib 78.6%", color=color.new(color.purple, 60), linewidth=1, style=plot.style_linebr)
+
+// ── BREAKOUT DETECTION ────────────────────────────────────────────────────────
+range_high_20 = ta.highest(high, 20)[1]
+range_low_20  = ta.lowest (low,  20)[1]
+range_pct_20  = (range_high_20 - range_low_20) / range_low_20 * 100
+
+// Confirmed breakout: this candle AND previous candle both closed outside range
+bull_breakout = close > range_high_20 and close[1] > range_high_20 and range_pct_20 < 20
+bear_breakout = close < range_low_20  and close[1] < range_low_20  and range_pct_20 < 20
+
+// ── CONFLUENCE SCORING ────────────────────────────────────────────────────────
+// Mirrors the Python confluence.py scoring logic
+// Each signal adds points — must meet min_score to fire an alert
+
+score_long = 0
+score_long := score_long + (at_support    ? 25 : 0)
+score_long := score_long + (bullish_div   ? 20 : 0)
+score_long := score_long + (macd_bull_cross ? 5 : 0)
+score_long := score_long + (mfi_oversold or mfi_turning_green ? 15 : 0)
+score_long := score_long + (price_crossed_ema_up ? 15 : price_above_ema ? 8 : 0)
+score_long := score_long + (in_fib_786_zone ? 15 : in_fib_618_zone ? 10 : 0)
+score_long := score_long + (bull_breakout ? 10 : 0)
+
+score_short = 0
+score_short := score_short + (at_resistance ? 25 : 0)
+score_short := score_short + (bearish_div   ? 20 : 0)
+score_short := score_short + (macd_bear_cross ? 5 : 0)
+score_short := score_short + (mfi_overbought ? 15 : 0)
+score_short := score_short + (price_crossed_ema_down ? 15 : price_below_ema ? 8 : 0)
+score_short := score_short + (bear_breakout ? 10 : 0)
+
+long_signal  = score_long  >= min_score
+short_signal = score_short >= min_score
+
+// ── PLOT SIGNALS ──────────────────────────────────────────────────────────────
+plotshape(long_signal,  title="LONG Signal",  style=shape.labelup,
+    location=location.belowbar, color=color.new(color.green, 0),
+    text="LONG", textcolor=color.white, size=size.normal)
+
+plotshape(short_signal, title="SHORT Signal", style=shape.labeldown,
+    location=location.abovebar, color=color.new(color.red, 0),
+    text="SHORT", textcolor=color.white, size=size.normal)
+
+// Plot score as a label for debugging
+if long_signal
+    label.new(bar_index, low * 0.995,
+        str.tostring(score_long) + "/100",
+        style=label.style_none, textcolor=color.green, size=size.small)
+
+if short_signal
+    label.new(bar_index, high * 1.005,
+        str.tostring(score_short) + "/100",
+        style=label.style_none, textcolor=color.red, size=size.small)
+
+// ── STRATEGY ENTRIES (for backtesting in Strategy Tester) ────────────────────
+if long_signal  and strategy.position_size == 0
+    strategy.entry("Long",  strategy.long)
+
+if short_signal and strategy.position_size == 0
+    strategy.entry("Short", strategy.short)
+
+// Exit on opposite signal
+if short_signal and strategy.position_size > 0
+    strategy.close("Long")
+
+if long_signal  and strategy.position_size < 0
+    strategy.close("Short")
+
+// ── ALERT CONDITIONS ─────────────────────────────────────────────────────────
+// After adding this script to your chart, create THREE alerts:
+//
+// ALERT 1 — Long Entry
+//   Condition: "AJ Confluence Strategy" → "LONG Signal"
+//   Message:
+// {
+//   "secret":    "YOUR_SECRET_HERE",
+//   "symbol":    "{{ticker}}",
+//   "direction": "long",
+//   "price":     {{close}},
+//   "signal":    "confluence_alert",
+//   "score":     {{plot_0}},
+//   "timeframe": "{{interval}}"
+// }
+//   Webhook URL: https://YOUR_SERVER_IP/webhook
+//
+// ALERT 2 — Short Entry
+//   Condition: "AJ Confluence Strategy" → "SHORT Signal"
+//   Message:  (same as above but "direction": "short")
+//   Webhook URL: https://YOUR_SERVER_IP/webhook
+//
+// ALERT 3 — Trailing Stop Update (fires every bar close)
+//   Condition: Any bar close
+//   Message:
+// {
+//   "secret":    "YOUR_SECRET_HERE",
+//   "symbol":    "{{ticker}}",
+//   "direction": "current",
+//   "price":     {{close}},
+//   "signal":    "trail_update",
+//   "timeframe": "{{interval}}"
+// }
+//   Webhook URL: https://YOUR_SERVER_IP/webhook/trail
+
+alertcondition(long_signal,  title="LONG Signal",  message="Long confluence signal fired")
+alertcondition(short_signal, title="SHORT Signal",  message="Short confluence signal fired")

@@ -1,0 +1,17 @@
+# host_vars/bandit.yml
+ansible_host: 192.168.3.131
+ansible_user: saquadri
+# UFW ports this host needs open (beyond the fleet baseline of 22/80/443)
+ufw_extra_ports:
+  - { port: 8080, proto: tcp, comment: "App service" }
+  - { port: 5000, proto: tcp, comment: "Webhook" }
+# Only set this if you're ready to enforce default-deny inbound
+# ufw_set_default_policy: true
+
+
+# ── Kraken Day Trading Bot (non-secret settings) ──────────────
+daytradingbot_dry_run:              "true"
+daytradingbot_kraken_testnet:       "true"
+daytradingbot_min_confluence_score: "60"
+daytradingbot_risk_per_trade_pct:   "1.0"
+daytradingbot_max_open_positions:   "3"

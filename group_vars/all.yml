@@ -42,3 +42,10 @@ portainer_admin_password: "{{ vault_portainer_admin_password }}"
 # audit report and confirming all needed ports are in
 # ufw_allowed_tcp_ports (or host_vars overrides).
 ufw_set_default_policy: false
+
+#DayTradingBot
+daytradingbot_webhook_secret: "{{ vault_daytradingbot_webhook_secret }}"
+daytradingbot_kraken_api_key: "{{ vault_daytradingbot_kraken_api_key }}"
+daytradingbot_kraken_api_secret: "{{ vault_daytradingbot_kraken_api_secret }}"
+daytradingbot_telegram_token: "{{ vault_daytradingbot_telegram_bot_token }}"
+daytradingbot_telegram_chat_id: "{{ vault_daytradingbot_telegram_chat_id }}"
